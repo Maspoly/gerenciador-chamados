@@ -1,0 +1,113 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<dialog
+    id="calendarioAdminModal"
+    class="reserva-modal"
+>
+
+    <div class="reserva-modal-header">
+
+        <div>
+            <p class="eyebrow">
+                Reservas
+            </p>
+
+            <h2 id="calendarioAdminTitulo">
+                Calendario
+            </h2>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="fecharCalendarioAdminBtn"
+        >
+            Fechar
+        </button>
+
+    </div>
+
+
+    <div class="reserva-calendar-header">
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="mesAnteriorAdminBtn"
+        >
+            Anterior
+        </button>
+
+        <strong id="mesAnoAdminTitulo">
+        </strong>
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="proximoMesAdminBtn"
+        >
+            Proximo
+        </button>
+
+    </div>
+
+
+    <div class="reserva-calendar-weekdays">
+
+        <span>Dom</span>
+        <span>Seg</span>
+        <span>Ter</span>
+        <span>Qua</span>
+        <span>Qui</span>
+        <span>Sex</span>
+        <span>Sab</span>
+
+    </div>
+
+
+    <div
+        id="diasCalendarioAdmin"
+        class="reserva-calendar-days"
+    >
+    </div>
+    <div class="reserva-calendar-legend">
+
+        <div class="reserva-calendar-legend-item">
+            <span class="reserva-calendar-legend-color approved"></span>
+            <span>Aprovada - ocupa o horário</span>
+        </div>
+
+        <div class="reserva-calendar-legend-item">
+            <span class="reserva-calendar-legend-color requested"></span>
+            <span>Solicitada - pendente</span>
+        </div>
+
+        <div class="reserva-calendar-legend-item">
+            <span class="reserva-calendar-legend-color denied"></span>
+            <span>Negada</span>
+        </div>
+
+        <div class="reserva-calendar-legend-item">
+            <span class="reserva-calendar-legend-color canceled"></span>
+            <span>Cancelada</span>
+        </div>
+
+    </div>
+
+    <div class="reserva-calendar-schedule">
+
+        <h3 id="dataSelecionadaAdminTitulo">
+            Selecione um dia
+        </h3>
+
+        <div id="horariosDiaAdminConteudo">
+
+            <p>
+                Clique em um dia para visualizar
+                as reservas.
+            </p>
+
+        </div>
+
+    </div>
+
+</dialog>

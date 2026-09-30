@@ -1,0 +1,91 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<dialog id="calendarioModal" class="reserva-modal">
+
+    <div class="reserva-modal-header">
+
+        <div>
+            <p class="eyebrow">Disponibilidade</p>
+            <h2 id="calendarioTitulo">Horarios da area</h2>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="fecharCalendarioBtn"
+        >
+            Fechar
+        </button>
+
+    </div>
+
+    <div
+        id="calendarioContainer"
+        class="reserva-calendar"
+    >
+
+        <div class="reserva-calendar-header">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="mesAnteriorBtn"
+            >
+                &lt;
+            </button>
+
+            <h3 id="mesAnoCalendario"></h3>
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                id="proximoMesBtn"
+            >
+                &gt;
+            </button>
+
+        </div>
+
+        <div class="reserva-calendar-weekdays">
+            <span>Dom</span>
+            <span>Seg</span>
+            <span>Ter</span>
+            <span>Qua</span>
+            <span>Qui</span>
+            <span>Sex</span>
+            <span>Sab</span>
+        </div>
+
+        <div
+            id="diasCalendario"
+            class="reserva-calendar-days"
+        ></div>
+        <div class="reserva-calendar-legend">
+
+            <div class="reserva-calendar-legend-item">
+                <span class="reserva-calendar-legend-color approved"></span>
+                <span>Aprovada - horário ocupado</span>
+            </div>
+
+            <div class="reserva-calendar-legend-item">
+                <span class="reserva-calendar-legend-color requested"></span>
+                <span>Solicitada - pendente, não bloqueia o horário</span>
+            </div>
+
+        </div>
+        <div id="horariosDia" class="reserva-calendar-schedule">
+
+            <h3 id="dataSelecionadaTitulo">
+                Selecione um dia
+            </h3>
+
+            <div id="horariosDiaConteudo">
+                <p>
+                    Clique em um dia para visualizar os horarios ocupados.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</dialog>

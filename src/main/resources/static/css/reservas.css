@@ -1,0 +1,615 @@
+/* =========================
+   MODAIS
+   ========================= */
+
+.reserva-modal,
+.reserva-action-modal {
+    border: none;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.reserva-modal {
+    width: min(700px, 90vw);
+}
+
+.reserva-action-modal {
+    width: min(520px, 90vw);
+}
+
+.reserva-modal::backdrop,
+.reserva-action-modal::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+/* =========================
+   CABECALHOS DOS MODAIS
+   ========================= */
+
+.reserva-modal-header,
+.reserva-action-modal-header,
+.reserva-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.reserva-modal-header,
+.reserva-action-modal-header {
+    margin-bottom: 24px;
+}
+
+.reserva-calendar-header {
+    margin-bottom: 16px;
+}
+
+/* =========================
+   CALENDARIO
+   ========================= */
+
+.reserva-calendar-weekdays,
+.reserva-calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.reserva-calendar-weekdays {
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.reserva-calendar-day {
+    min-height: 48px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.reserva-calendar-day:hover {
+    transform: translateY(-1px);
+}
+
+.reserva-calendar-day.empty {
+    visibility: hidden;
+}
+
+/* =========================
+   DIA COM RESERVA APROVADA
+   ========================= */
+
+.reserva-calendar-day.has-reservation {
+    background-color: var(--primary);
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    outline: none;
+}
+
+.reserva-calendar-day.has-reservation:hover {
+    background-color: var(--primary-strong);
+    color: #ffffff;
+}
+
+/* =========================
+   DIA COM SOLICITACAO
+   ========================= */
+
+/*
+ * SOLICITADA aparece como pendente.
+ *
+ * Ela pode ser exibida no calendario,
+ * mas nao significa que o horario
+ * esteja ocupado.
+ */
+
+.reserva-calendar-day.has-request {
+    background-color: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+    border: none;
+    outline: none;
+}
+
+.reserva-calendar-day.has-request:hover {
+    background-color: rgba(13, 92, 99, 0.2);
+    color: var(--primary-strong);
+}
+
+/*
+ * Se o mesmo dia possuir pelo menos
+ * uma APROVADA e tambem uma SOLICITADA,
+ * a APROVADA prevalece visualmente.
+ */
+
+.reserva-calendar-day.has-reservation.has-request {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.reserva-calendar-day.has-reservation.has-request:hover {
+    background-color: var(--primary-strong);
+    color: #ffffff;
+}
+
+/* =========================
+   LEGENDA DO CALENDARIO
+   ========================= */
+
+.reserva-calendar-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.reserva-calendar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.reserva-calendar-legend-color {
+    width: 14px;
+    height: 14px;
+
+    border-radius: 4px;
+
+    flex-shrink: 0;
+}
+
+/* Reserva aprovada / horario ocupado */
+
+.reserva-calendar-legend-color.approved {
+    background-color: var(--primary);
+}
+
+/* Solicitacao pendente */
+
+.reserva-calendar-legend-color.requested {
+    background-color: rgba(13, 92, 99, 0.24);
+    border: 1px solid rgba(13, 92, 99, 0.4);
+}
+
+/* =========================
+   HORARIOS DO DIA
+   ========================= */
+
+.reserva-calendar-schedule {
+    margin-top: 24px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--line);
+}
+
+.reserva-calendar-schedule h3 {
+    margin-bottom: 12px;
+}
+
+.reserva-calendar-item {
+    padding: 12px 0;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.reserva-calendar-item:last-child {
+    border-bottom: none;
+}
+
+/* =========================
+   ACOES DA TABELA
+   ========================= */
+
+/*
+ * IMPORTANTE:
+ *
+ * .cell-actions e um <td>.
+ * Ele precisa continuar sendo uma
+ * celula normal da tabela.
+ *
+ * O flex fica dentro de
+ * .reservation-actions.
+ */
+
+.reservas-table td.cell-actions,
+.cell-actions {
+    display: table-cell !important;
+    vertical-align: middle;
+}
+
+/*
+ * Aprovar e Negar ficam
+ * um ao lado do outro.
+ */
+
+.reservation-actions {
+    display: flex;
+    align-items: center;
+
+    flex-wrap: nowrap;
+
+    gap: 8px;
+
+    min-height: 40px;
+    width: 100%;
+}
+
+.reservation-action-form {
+    display: inline-flex;
+
+    margin: 0;
+    padding: 0;
+}
+
+.reservation-actions .btn {
+    width: auto;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
+}
+
+/* =========================
+   MOTIVOS
+   ========================= */
+
+.reserva-motivo {
+    margin-top: 8px;
+    margin-bottom: 0;
+
+    font-size: 0.875rem;
+    line-height: 1.4;
+
+    color: var(--muted);
+}
+
+/* =========================
+   TEXTAREA DOS MODAIS
+   ========================= */
+
+.reserva-action-modal textarea {
+    width: 100%;
+    min-height: 110px;
+
+    resize: vertical;
+}
+
+/* =========================
+   BOTOES DOS MODAIS
+   ========================= */
+
+.reserva-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+/* =========================
+   FILTRO ADMIN
+   ========================= */
+
+.reservas-filter {
+    display: flex;
+    align-items: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+.reservas-filter .field {
+    margin: 0;
+}
+
+.reservas-filter .field:first-child {
+    width: min(320px, 100%);
+}
+
+.reservas-filter .field:last-child {
+    width: auto;
+}
+
+.reservas-filter button {
+    width: auto;
+    min-width: 100px;
+}
+
+/* =========================
+   TABELA DE RESERVAS
+   ========================= */
+
+.reservas-table {
+    width: 100%;
+}
+
+.reservas-table th,
+.reservas-table td {
+    vertical-align: middle;
+}
+
+/*
+ * Espaco suficiente para:
+ *
+ * [Aprovar] [Negar]
+ *
+ * sem jogar um botao para baixo.
+ */
+
+.reservas-table th:last-child,
+.reservas-table td:last-child {
+    width: 220px;
+    min-width: 220px;
+}
+
+/*
+ * Mantem todas as celulas
+ * participando normalmente da tabela.
+ *
+ * Isso evita o problema visual
+ * de linhas quebradas em reservas
+ * CANCELADAS e NEGADAS.
+ */
+
+.reservas-table td {
+    display: table-cell;
+}
+
+.reservas-table tr {
+    display: table-row;
+}
+
+/* =========================
+   CONTROLES DO CALENDARIO ADMIN
+   ========================= */
+
+.reservas-calendar-tools {
+    display: flex;
+    align-items: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+.reservas-calendar-tools .field {
+    margin: 0;
+
+    width: min(320px, 100%);
+}
+
+.reservas-calendar-tools .btn {
+    width: auto;
+}
+
+/* =========================
+   RESPONSIVIDADE
+   ========================= */
+
+@media (max-width: 768px) {
+    .reservas-calendar-tools,
+    .reservas-filter {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .reservas-calendar-tools .field,
+    .reservas-filter .field:first-child {
+        width: 100%;
+    }
+
+    .reservas-calendar-tools .btn,
+    .reservas-filter button {
+        width: 100%;
+    }
+
+    /* =========================
+       CALENDARIO
+       ========================= */
+
+    .reserva-calendar-weekdays,
+    .reserva-calendar-days {
+        gap: 5px;
+    }
+
+    .reserva-calendar-day {
+        min-height: 42px;
+        padding: 4px;
+    }
+
+    .reserva-calendar-legend {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 8px;
+    }
+
+    /* =========================
+       MODAIS
+       ========================= */
+
+    .reserva-modal,
+    .reserva-action-modal {
+        width: 94vw;
+
+        padding: 18px;
+    }
+
+    /* =========================
+       ACOES DA TABELA
+       ========================= */
+
+    .reservation-actions {
+        flex-wrap: wrap;
+    }
+
+    .reservas-table th:last-child,
+    .reservas-table td:last-child {
+        width: auto;
+        min-width: 180px;
+    }
+}
+/* =========================
+   CALENDARIO - MINHAS RESERVAS
+   ========================= */
+
+.reserva-calendar-day.has-own-reservation {
+    background-color: var(--accent-soft);
+    color: var(--ink);
+    font-weight: 700;
+    border: 1px solid var(--accent);
+}
+
+.reserva-calendar-day.has-own-reservation:hover {
+    background-color: rgba(219, 162, 74, 0.24);
+    color: var(--ink);
+}
+
+/* =========================
+   STATUS NO CALENDARIO
+   ========================= */
+
+.reserva-calendar-status {
+    display: inline-flex;
+    align-items: center;
+
+    width: fit-content;
+
+    margin-top: 8px;
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.reserva-calendar-status.status-solicitada {
+    background-color: var(--primary-soft);
+    color: var(--primary);
+}
+
+.reserva-calendar-status.status-aprovada {
+    background-color: rgba(22, 124, 91, 0.12);
+    color: var(--success);
+}
+
+.reserva-calendar-status.status-negada {
+    background-color: rgba(182, 65, 52, 0.12);
+    color: var(--danger);
+}
+
+.reserva-calendar-status.status-cancelada {
+    background-color: rgba(95, 108, 128, 0.12);
+    color: var(--neutral);
+}
+
+.reserva-calendar-period {
+    margin-top: 4px;
+
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+/* =========================
+   LEGENDA DE STATUS
+   ========================= */
+
+.reserva-status-dot {
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
+}
+
+.reserva-status-dot.solicitada {
+    background-color: var(--primary);
+}
+
+.reserva-status-dot.aprovada {
+    background-color: var(--success);
+}
+
+.reserva-status-dot.negada {
+    background-color: var(--danger);
+}
+
+.reserva-status-dot.cancelada {
+    background-color: var(--neutral);
+}
+/* =========================
+   CALENDARIO ADMIN - HISTORICO
+   ========================= */
+
+.reserva-calendar-day.has-denied {
+    background-color: rgba(182, 65, 52, 0.18);
+    color: var(--danger);
+    font-weight: 700;
+
+    border: 1px solid rgba(182, 65, 52, 0.4);
+}
+
+.reserva-calendar-day.has-denied:hover {
+    background-color: rgba(182, 65, 52, 0.28);
+}
+
+.reserva-calendar-day.has-canceled {
+    background-color: rgba(95, 108, 128, 0.18);
+    color: var(--neutral);
+    font-weight: 700;
+
+    border: 1px solid rgba(95, 108, 128, 0.4);
+}
+
+.reserva-calendar-day.has-canceled:hover {
+    background-color: rgba(95, 108, 128, 0.28);
+}
+
+/*
+ * Somente estados historicos diferentes
+ * no mesmo dia.
+ */
+
+.reserva-calendar-day.has-history {
+    background-color: var(--accent-soft);
+    color: var(--ink);
+    font-weight: 700;
+
+    border: 1px solid var(--accent);
+}
+
+.reserva-calendar-day.has-history:hover {
+    background-color: rgba(219, 162, 74, 0.24);
+}
+
+/* =========================
+   LEGENDA ADMIN
+   ========================= */
+
+.reserva-calendar-legend-color.denied {
+    background-color: var(--danger);
+}
+
+.reserva-calendar-legend-color.canceled {
+    background-color: var(--neutral);
+}

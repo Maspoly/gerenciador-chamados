@@ -6,4 +6,5 @@
     <link rel="stylesheet" href="${ctx}/css/layout.css">
     <link rel="stylesheet" href="${ctx}/css/components.css">
     <link rel="stylesheet" href="${ctx}/css/responsive.css">
+    <link rel="stylesheet" href="${ctx}/css/reservas.css">
 </head>
