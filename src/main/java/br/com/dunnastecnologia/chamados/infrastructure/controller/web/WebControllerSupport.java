@@ -1,16 +1,14 @@
 package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
-import br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser;
-import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
-import br.com.dunnastecnologia.chamados.domain.model.Bloco;
-import br.com.dunnastecnologia.chamados.domain.model.Chamado;
-import br.com.dunnastecnologia.chamados.domain.model.Comentario;
-import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
-import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
-import br.com.dunnastecnologia.chamados.domain.model.Unidade;
-import br.com.dunnastecnologia.chamados.domain.model.Usuario;
-import br.com.dunnastecnologia.chamados.infrastructure.exception.UnauthorizedOperationException;
-import br.com.dunnastecnologia.chamados.infrastructure.security.adapter.UserDetailsImpl;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,14 +18,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
+import br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser;
+import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.AreaComum;
+import br.com.dunnastecnologia.chamados.domain.model.Bloco;
+import br.com.dunnastecnologia.chamados.domain.model.Chamado;
+import br.com.dunnastecnologia.chamados.domain.model.Comentario;
+import br.com.dunnastecnologia.chamados.domain.model.Reserva;
+import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
+import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
+import br.com.dunnastecnologia.chamados.domain.model.Unidade;
+import br.com.dunnastecnologia.chamados.domain.model.Usuario;
+import br.com.dunnastecnologia.chamados.infrastructure.exception.UnauthorizedOperationException;
+import br.com.dunnastecnologia.chamados.infrastructure.security.adapter.UserDetailsImpl;
 
 @Component
 public class WebControllerSupport {
@@ -217,6 +220,86 @@ public class WebControllerSupport {
         values.put("contentType", contentType);
         values.put("tamanhoBytes", tamanhoBytes);
         values.put("tamanhoFormatado", formatBytes(tamanhoBytes));
+        return values;
+    }
+    
+    public Map<String, Object> toAreaComumMap(AreaComum areaComum) {
+        Map<String, Object> values = new LinkedHashMap<>();
+
+        values.put("id", areaComum.getId());
+        values.put("nome", areaComum.getNome());
+        values.put("descricao", areaComum.getDescricao());
+        values.put("ativa", areaComum.getAtiva());
+
+        return values;
+    }
+
+    public Map<String, Object> toReservaMap(Reserva reserva) {
+        Map<String, Object> values = new LinkedHashMap<>();
+
+        values.put("id", reserva.getId());
+
+        values.put(
+                "areaComumId",
+                reserva.getAreaComum() == null
+                        ? null
+                        : reserva.getAreaComum().getId()
+        );
+
+        values.put(
+                "areaComumNome",
+                reserva.getAreaComum() == null
+                        ? null
+                        : reserva.getAreaComum().getNome()
+        );
+
+        values.put(
+                "moradorId",
+                reserva.getMorador() == null
+                        ? null
+                        : reserva.getMorador().getId()
+        );
+
+        values.put(
+                "moradorNome",
+                reserva.getMorador() == null
+                        ? null
+                        : reserva.getMorador().getNome()
+        );
+
+        values.put("dataHoraInicio", reserva.getDataHoraInicio());
+
+        values.put(
+                "dataHoraInicioFormatada",
+                formatDateTime(reserva.getDataHoraInicio())
+        );
+
+        values.put("dataHoraFim", reserva.getDataHoraFim());
+
+        values.put(
+                "dataHoraFimFormatada",
+                formatDateTime(reserva.getDataHoraFim())
+        );
+
+        values.put(
+                "status",
+                reserva.getStatus() == null
+                        ? null
+                        : reserva.getStatus().name()
+        );
+
+        values.put(
+                "motivoNegativa",
+                reserva.getMotivoNegativa()
+        );
+
+        values.put("dataCriacao", reserva.getDataCriacao());
+
+        values.put(
+                "dataCriacaoFormatada",
+                formatDateTime(reserva.getDataCriacao())
+        );
+
         return values;
     }
 

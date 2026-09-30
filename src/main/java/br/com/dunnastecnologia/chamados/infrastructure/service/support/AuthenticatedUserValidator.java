@@ -1,13 +1,14 @@
 package br.com.dunnastecnologia.chamados.infrastructure.service.support;
 
+import java.util.Locale;
+
+import org.springframework.stereotype.Component;
+
 import br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.UnauthorizedOperationException;
 import br.com.dunnastecnologia.chamados.infrastructure.repository.AdministradorRepository;
 import br.com.dunnastecnologia.chamados.infrastructure.repository.ColaboradorRepository;
 import br.com.dunnastecnologia.chamados.infrastructure.repository.MoradorRepository;
-import org.springframework.stereotype.Component;
-
-import java.util.Locale;
 
 @Component
 public class AuthenticatedUserValidator {

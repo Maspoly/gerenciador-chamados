@@ -2,6 +2,7 @@ package br.com.dunnastecnologia.chamados.infrastructure.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,16 +16,26 @@ import br.com.dunnastecnologia.chamados.domain.model.StatusReserva;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, UUID> {
 
-    // Busca todas as reservas de um morador específico (para a listagem do Morador)
-    List<Reserva> findByMoradorIdOrderByDataInicioDesc(UUID moradorId);
+    List<Reserva> findByMoradorIdOrderByDataCriacaoDesc(
+            UUID moradorId
+    );
 
-    // Consulta de Conflito: Verifica se existe alguma reserva APROVADA na mesma área que se sobrepõe ao intervalo solicitado
+    List<Reserva> findAllByOrderByDataCriacaoDesc();
+
+    List<Reserva> findByStatusOrderByDataCriacaoDesc(
+            StatusReserva status
+    );
+
+    // Busca todas as reservas de um morador específico ordenadas por data
+    List<Reserva> findByMoradorIdOrderByDataHoraInicioDesc(UUID moradorId);
+
+    // Consulta de Conflito: Verifica se existe reserva APROVADA na mesma área com sobreposição
     @Query("""
         SELECT COUNT(r) > 0 FROM Reserva r
         WHERE r.areaComum.id = :areaComumId
           AND r.status = :statusAprovada
-          AND r.dataInicio < :dataFim
-          AND r.dataFim > :dataInicio
+          AND r.dataHoraInicio < :dataFim
+          AND r.dataHoraFim > :dataInicio
     """)
     boolean existeConflitoAprovado(
         @Param("areaComumId") UUID areaComumId,
@@ -33,6 +44,43 @@ public interface ReservaRepository extends JpaRepository<Reserva, UUID> {
         @Param("statusAprovada") StatusReserva statusAprovada
     );
 
-    // Busca todas as reservas ativas/pendentes de uma determinada área em um período (para visualização no calendário/agenda)
-    List<Reserva> findByAreaComumIdAndDataInicioBetween(UUID areaComumId, LocalDateTime inicio, LocalDateTime fim);
+    @Query("""
+        SELECT r FROM Reserva r
+        WHERE r.areaComum.id = :areaComumId
+        AND r.status = :status
+        AND r.dataHoraInicio < :fim
+        AND r.dataHoraFim > :inicio
+        ORDER BY r.dataHoraInicio
+    """)
+    List<Reserva> buscarAprovadasPorAreaEPeriodo(
+            @Param("areaComumId") UUID areaComumId,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("status") StatusReserva status
+    );
+
+    // Busca reservas de uma determinada área em um período para o calendário
+    List<Reserva> findByAreaComumIdAndDataHoraInicioBetween(UUID areaComumId, LocalDateTime inicio, LocalDateTime fim);
+    List<Reserva> findByStatusOrderByDataHoraInicioDesc(StatusReserva status);
+
+    @Query("""
+        SELECT r
+        FROM Reserva r
+        WHERE r.areaComum.id = :areaComumId
+        AND r.status IN :status
+        AND r.dataHoraInicio < :fim
+        AND r.dataHoraFim > :inicio
+        ORDER BY r.dataHoraInicio
+    """)
+    List<Reserva> buscarPorAreaEPeriodoEStatus(
+            @Param("areaComumId") UUID areaComumId,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("status") List<StatusReserva> status
+    );
+
+    Optional<Reserva> findByIdAndMoradorId(
+        UUID reservaId,
+        UUID moradorId
+    );
 }

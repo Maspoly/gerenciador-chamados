@@ -1,25 +1,12 @@
 package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
-import br.com.dunnastecnologia.chamados.application.UserCase.AdminUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
-import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
-import br.com.dunnastecnologia.chamados.domain.model.Colaborador;
-import br.com.dunnastecnologia.chamados.domain.model.Morador;
-import br.com.dunnastecnologia.chamados.domain.model.Unidade;
-import br.com.dunnastecnologia.chamados.domain.model.Usuario;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.AtualizarStatusForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.BlocoForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.ComentarioForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.StatusChamadoForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.TipoChamadoForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.UsuarioForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.VincularColaboradorTipoChamadoForm;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.VincularMoradorUnidadeForm;
-import br.com.dunnastecnologia.chamados.infrastructure.exception.BusinessRuleException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -32,12 +19,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import br.com.dunnastecnologia.chamados.application.UserCase.AdminUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AreaComumUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
+import br.com.dunnastecnologia.chamados.application.UserCase.ReservaUseCases;
+import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Colaborador;
+import br.com.dunnastecnologia.chamados.domain.model.Morador;
+import br.com.dunnastecnologia.chamados.domain.model.StatusReserva;
+import br.com.dunnastecnologia.chamados.domain.model.Unidade;
+import br.com.dunnastecnologia.chamados.domain.model.Usuario;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.AreaComumForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.AtualizarStatusForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.BlocoForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.ComentarioForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.StatusChamadoForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.TipoChamadoForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.UsuarioForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.VincularColaboradorTipoChamadoForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.VincularMoradorUnidadeForm;
+import br.com.dunnastecnologia.chamados.infrastructure.exception.BusinessRuleException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Controller
 @RequestMapping("/admin")
@@ -50,17 +55,23 @@ public class AdminWebController {
     private final AnexoChamadoUseCases anexoChamadoUseCases;
     private final ComentarioUseCase comentarioUseCase;
     private final WebControllerSupport support;
+    private final ReservaUseCases reservaUseCases;
+    private final AreaComumUseCases areaComumUseCases;
 
     public AdminWebController(
             AdminUseCases adminUseCases,
             AnexoChamadoUseCases anexoChamadoUseCases,
             ComentarioUseCase comentarioUseCase,
-            WebControllerSupport support
+            ReservaUseCases reservaUseCases,
+            WebControllerSupport support,
+            AreaComumUseCases areaComumUseCases
     ) {
         this.adminUseCases = adminUseCases;
         this.anexoChamadoUseCases = anexoChamadoUseCases;
         this.comentarioUseCase = comentarioUseCase;
+        this.reservaUseCases = reservaUseCases;
         this.support = support;
+        this.areaComumUseCases = areaComumUseCases;
     }
 
     @ModelAttribute("blocoForm")
@@ -482,6 +493,119 @@ public class AdminWebController {
                         .toList()
         );
         return "admin/chamados/detalhe";
+    }
+
+    @Operation(
+        summary = "Lista todas as reservas para o administrador",
+        tags = "02 - Admin Web - Paginas"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pagina de reservas renderizada com sucesso."
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado para o perfil autenticado."
+            )
+    })
+    @GetMapping({"/reservas", "/reservas/"})
+    @Transactional(readOnly = true)
+    public String listarReservas(
+            Authentication authentication,
+
+            @RequestParam(required = false)
+            StatusReserva status,
+
+            Model model
+    ) {
+        var currentUser =
+                support.authenticatedUser(authentication);
+        var areasCalendario =
+            areaComumUseCases.listarTodas(currentUser);
+
+        var reservas =
+                status == null
+                        ? reservaUseCases.listarTodas(currentUser)
+                        : reservaUseCases.listarPorStatus(
+                                currentUser,
+                                status
+                        );
+
+        model.addAttribute(
+                "pageTitle",
+                "Reservas"
+        );
+
+        model.addAttribute(
+                "reservas",
+                support.mapContent(
+                        reservas,
+                        support::toReservaMap
+                )
+        );
+
+        model.addAttribute(
+                "statusSelecionado",
+                status == null
+                        ? null
+                        : status.name()
+        );
+
+        model.addAttribute(
+            "areasCalendario",
+            support.mapContent(
+                    areasCalendario,
+                    support::toAreaComumMap
+            )
+        );
+
+        return "admin/reservas/lista";
+    }
+
+    @Operation(
+        summary = "Lista as areas comuns",
+        tags = "02 - Admin Web - Paginas"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pagina de areas comuns renderizada com sucesso."
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Acesso negado para o perfil autenticado."
+            )
+    })
+    @GetMapping({"/areas-comuns", "/areas-comuns/"})
+    @Transactional(readOnly = true)
+    public String listarAreasComuns(
+            Authentication authentication,
+            @RequestParam(required = false) UUID editar,
+            Model model
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
+
+        var areas = areaComumUseCases.listarTodas(currentUser);
+
+        model.addAttribute("pageTitle", "Áreas Comuns");
+        model.addAttribute("areas", areas);
+
+        if (editar != null) {
+            var area = areaComumUseCases.buscarPorId(editar);
+
+            model.addAttribute(
+                    "areaEmEdicao",
+                    support.toAreaComumMap(area)
+            );
+        }
+
+        return "admin/areas-comuns/lista";
+    }
+    
+    @ModelAttribute("areaComumForm")
+    public AreaComumForm areaComumForm() {
+        return new AreaComumForm();
     }
 
     private UsuarioForm toUsuarioForm(Usuario usuario) {
