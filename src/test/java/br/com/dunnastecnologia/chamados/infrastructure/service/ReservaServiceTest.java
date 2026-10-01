@@ -138,6 +138,57 @@ class ReservaServiceTest {
         );
     }
 
+        @Test
+        void solicitarReservaDeveRejeitarQuandoHorarioInicialJaOcorreu() {
+        AuthenticatedUser moradorAutenticado = new AuthenticatedUser(
+            UUID.randomUUID(),
+            "morador@condominio.local",
+            "ROLE_MORADOR"
+        );
+
+        doNothing().when(authenticatedUserValidator).assertMorador(moradorAutenticado);
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> reservaService.solicitarReserva(
+                moradorAutenticado,
+                UUID.randomUUID(),
+                agora().minusMinutes(1),
+                agora().plusHours(1)
+            )
+        );
+        }
+
+        @Test
+        void solicitarReservaDeveRejeitarQuandoDatasNaoForemInformadas() {
+        AuthenticatedUser moradorAutenticado = new AuthenticatedUser(
+            UUID.randomUUID(),
+            "morador@condominio.local",
+            "ROLE_MORADOR"
+        );
+
+        doNothing().when(authenticatedUserValidator).assertMorador(moradorAutenticado);
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> reservaService.solicitarReserva(
+                moradorAutenticado,
+                UUID.randomUUID(),
+                null,
+                agora().plusHours(1)
+            )
+        );
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> reservaService.solicitarReserva(
+                moradorAutenticado,
+                UUID.randomUUID(),
+                agora().plusHours(1),
+                null
+            )
+        );
+        }
+
     @Test
     void aprovarReservaDeveAprovarSolicitacaoValidaERegistrarHistorico() {
         UUID reservaId = UUID.randomUUID();
@@ -296,6 +347,73 @@ class ReservaServiceTest {
         ));
     }
 
+        @Test
+        void cancelarReservaDevePermitirMoradorProprietarioCancelarReservaAprovada() {
+        UUID reservaId = UUID.randomUUID();
+        UUID moradorId = UUID.randomUUID();
+        AuthenticatedUser moradorAutenticado = new AuthenticatedUser(
+            moradorId,
+            "morador@condominio.local",
+            "ROLE_MORADOR"
+        );
+        Morador morador = new Morador();
+        morador.setId(moradorId);
+        Reserva reserva = new Reserva();
+        reserva.setId(reservaId);
+        reserva.setStatus(StatusReserva.APROVADA);
+        reserva.setDataHoraInicio(agora().plusDays(2));
+        reserva.setDataHoraFim(agora().plusDays(2).plusHours(2));
+        reserva.setMorador(morador);
+
+        when(authenticatedUserValidator.isAdministrador(moradorAutenticado)).thenReturn(false);
+        doNothing().when(authenticatedUserValidator).assertMorador(moradorAutenticado);
+        when(reservaRepository.findByIdAndMoradorId(reservaId, moradorId)).thenReturn(Optional.of(reserva));
+        when(usuarioRepository.findByIdAndAtivoTrue(moradorId)).thenReturn(Optional.of(morador));
+        when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(historicoReservaRepository.save(any(HistoricoReserva.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Reserva cancelada = reservaService.cancelarReserva(
+            reservaId,
+            "Cancelamento solicitado pelo morador.",
+            moradorAutenticado
+        );
+
+        assertEquals(StatusReserva.CANCELADA, cancelada.getStatus());
+        verify(reservaRepository).save(reserva);
+        verify(historicoReservaRepository).save(argThat(historico ->
+            historico.getStatusAnterior() == StatusReserva.APROVADA
+                && historico.getStatusNovo() == StatusReserva.CANCELADA
+                && historico.getUsuario() == morador
+        ));
+        }
+
+        @Test
+        void cancelarReservaDeveRejeitarQuandoEstadoJaForCancelada() {
+        UUID reservaId = UUID.randomUUID();
+        UUID adminId = UUID.randomUUID();
+        AuthenticatedUser administrador = new AuthenticatedUser(
+            adminId,
+            "admin@condominio.local",
+            "ROLE_ADMINISTRADOR"
+        );
+        Reserva reserva = new Reserva();
+        reserva.setId(reservaId);
+        reserva.setStatus(StatusReserva.CANCELADA);
+        reserva.setDataHoraInicio(agora().plusDays(2));
+        reserva.setDataHoraFim(agora().plusDays(2).plusHours(2));
+
+        when(authenticatedUserValidator.isAdministrador(administrador)).thenReturn(true);
+        doNothing().when(authenticatedUserValidator).assertAdministrador(administrador);
+        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> reservaService.cancelarReserva(reservaId, "Cancelamento", administrador)
+        );
+        assertEquals(StatusReserva.CANCELADA, reserva.getStatus());
+        org.mockito.Mockito.verify(reservaRepository, org.mockito.Mockito.never()).save(any(Reserva.class));
+        }
+
     @Test
     void cancelarReservaDeveRejeitarQuandoMoradorNaoEhProprietario() {
         UUID reservaId = UUID.randomUUID();
@@ -364,6 +482,29 @@ class ReservaServiceTest {
 
         assertEquals(2, disponibilidade.size());
     }
+
+        @Test
+        void buscarMotivoCancelamentoDeveRejeitarReservaDeOutroMorador() {
+        UUID reservaId = UUID.randomUUID();
+        UUID moradorId = UUID.randomUUID();
+        AuthenticatedUser moradorAutenticado = new AuthenticatedUser(
+            moradorId,
+            "morador@condominio.local",
+            "ROLE_MORADOR"
+        );
+
+        doNothing().when(authenticatedUserValidator).assertMorador(moradorAutenticado);
+        when(reservaRepository.findByIdAndMoradorId(reservaId, moradorId)).thenReturn(Optional.empty());
+
+        SecurityException exception = assertThrows(
+            SecurityException.class,
+            () -> reservaService.buscarMotivoCancelamento(moradorAutenticado, reservaId)
+        );
+
+        assertEquals("Operacao nao permitida.", exception.getMessage());
+        verify(historicoReservaRepository, org.mockito.Mockito.never())
+            .findTopByReservaIdAndStatusNovoOrderByDataAlteracaoDesc(reservaId, StatusReserva.CANCELADA);
+        }
 
     @Test
     void aprovarReservaDeveRejeitarQuandoStatusNaoEhSolicitada() {
