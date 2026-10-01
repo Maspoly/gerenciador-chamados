@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -529,6 +528,6 @@ class ReservaServiceTest {
     }
 
     private LocalDateTime agora() {
-        return LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+        return LocalDateTime.now();
     }
 }

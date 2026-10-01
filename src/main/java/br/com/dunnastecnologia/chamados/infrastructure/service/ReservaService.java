@@ -1,7 +1,6 @@
 package br.com.dunnastecnologia.chamados.infrastructure.service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,9 +25,6 @@ import br.com.dunnastecnologia.chamados.infrastructure.service.support.Authentic
 @Service
 @Transactional(readOnly = true)
 public class ReservaService implements ReservaUseCases {
-
-    private static final ZoneId ZONA_HORARIA_RESERVAS =
-            ZoneId.of("America/Sao_Paulo");
 
     private final ReservaRepository reservaRepository;
     private final AreaComumRepository areaComumRepository;
@@ -489,7 +485,7 @@ public class ReservaService implements ReservaUseCases {
                 );
     }
 
-    private LocalDateTime agora() {
-        return LocalDateTime.now(ZONA_HORARIA_RESERVAS);
-    }
+	private LocalDateTime agora() {
+	return LocalDateTime.now();
+	}
 }
