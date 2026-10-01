@@ -1,18 +1,24 @@
-package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
+package br.com.dunnastecnologia.chamados.integration.controller.web;
 
-import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
-import br.com.dunnastecnologia.chamados.application.UserCase.MoradorUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.StatusChamadoUseCase;
-import br.com.dunnastecnologia.chamados.application.UserCase.TipoChamadoUseCase;
-import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
-import br.com.dunnastecnologia.chamados.domain.model.Chamado;
-import br.com.dunnastecnologia.chamados.domain.model.Comentario;
-import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
-import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
-import br.com.dunnastecnologia.chamados.domain.model.Unidade;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.api.MoradorChamadoApiController;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -23,27 +29,27 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AreaComumUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
+import br.com.dunnastecnologia.chamados.application.UserCase.MoradorUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.ReservaUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.StatusChamadoUseCase;
+import br.com.dunnastecnologia.chamados.application.UserCase.TipoChamadoUseCase;
+import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Chamado;
+import br.com.dunnastecnologia.chamados.domain.model.Comentario;
+import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
+import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
+import br.com.dunnastecnologia.chamados.domain.model.Unidade;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.api.MoradorChamadoApiController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.MoradorWebController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.WebControllerSupport;
 
 @WebMvcTest({MoradorWebController.class, MoradorChamadoApiController.class})
-@AutoConfigureMockMvc(addFilters = false)
-@Import(WebControllerSupport.class)
+@AutoConfigureMockMvc
+@Import({WebControllerSupport.class, TestSecurityConfig.class})
 class MoradorWebControllerIntegrationTest {
 
     @Autowired
@@ -51,6 +57,12 @@ class MoradorWebControllerIntegrationTest {
 
     @MockitoBean
     private MoradorUseCases moradorUseCases;
+
+    @MockitoBean
+    private ReservaUseCases reservaUseCases;
+
+    @MockitoBean
+    private AreaComumUseCases areaComumUseCases;
 
     @MockitoBean
     private TipoChamadoUseCase tipoChamadoUseCase;
@@ -88,6 +100,7 @@ class MoradorWebControllerIntegrationTest {
         TipoChamado tipoChamado = new TipoChamado();
         tipoChamado.setId(tipoChamadoId);
         tipoChamado.setTitulo("Vazamento");
+        tipoChamado.setPrazoHoras(24);
 
         when(moradorUseCases.listarMeusChamados(morador, statusId, unidadeId, tipoChamadoId, dataAbertura, pageRequest))
                 .thenReturn(new PageResult<>(List.of(), 0, 0, 3, 7));
@@ -100,7 +113,7 @@ class MoradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/morador/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
                                 .param("statusId", statusId.toString())
                                 .param("unidadeId", unidadeId.toString())
                                 .param("tipoChamadoId", tipoChamadoId.toString())
@@ -143,7 +156,8 @@ class MoradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         multipart("/morador/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
+                                .with(csrf())
                                 .param("unidadeId", unidadeId.toString())
                                 .param("tipoChamadoId", tipoChamadoId.toString())
                                 .param("descricao", "Vazamento na cozinha")
@@ -194,7 +208,8 @@ class MoradorWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/morador/chamados")
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
+                                .with(csrf())
                                 .param("unidadeId", unidadeId.toString())
                                 .param("tipoChamadoId", tipoChamadoId.toString())
                                 .param("descricao", "Porta quebrada")
@@ -230,7 +245,8 @@ class MoradorWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/morador/chamados/{chamadoId}/anexos", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
+                                .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/morador/chamados/" + chamadoId));
@@ -278,7 +294,8 @@ class MoradorWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/morador/chamados/{chamadoId}/comentarios", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
+                                .with(csrf())
                                 .param("mensagem", "Segue comprovante")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -305,7 +322,8 @@ class MoradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         patch("/morador/chamados/{chamadoId}/reabrir", chamadoId)
-                                .with(authentication(WebTestAuthenticationFactory.morador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextMorador()))
+                                .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/morador/chamados/" + chamadoId));

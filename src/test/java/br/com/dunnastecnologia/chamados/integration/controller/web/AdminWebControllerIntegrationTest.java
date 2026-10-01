@@ -1,9 +1,43 @@
-package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
+package br.com.dunnastecnologia.chamados.integration.controller.web;
+
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import br.com.dunnastecnologia.chamados.application.UserCase.AdminUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AreaComumUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
+import br.com.dunnastecnologia.chamados.application.UserCase.ReservaUseCases;
 import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
 import br.com.dunnastecnologia.chamados.domain.model.Bloco;
 import br.com.dunnastecnologia.chamados.domain.model.Comentario;
@@ -17,36 +51,8 @@ import br.com.dunnastecnologia.chamados.infrastructure.controller.api.MoradorUni
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.StatusChamadoApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.TipoChamadoApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.UsuarioApiController;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.AdminWebController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.WebControllerSupport;
 
 @WebMvcTest({
         AdminWebController.class,
@@ -58,8 +64,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         TipoChamadoApiController.class,
         UsuarioApiController.class
 })
-@AutoConfigureMockMvc(addFilters = false)
-@Import(WebControllerSupport.class)
+@AutoConfigureMockMvc
+@Import({WebControllerSupport.class, TestSecurityConfig.class})
 class AdminWebControllerIntegrationTest {
 
     @Autowired
@@ -67,6 +73,12 @@ class AdminWebControllerIntegrationTest {
 
     @MockitoBean
     private AdminUseCases adminUseCases;
+
+    @MockitoBean
+    private ReservaUseCases reservaUseCases;
+
+    @MockitoBean
+    private AreaComumUseCases areaComumUseCases;
 
     @MockitoBean
     private AnexoChamadoUseCases anexoChamadoUseCases;
@@ -101,7 +113,7 @@ class AdminWebControllerIntegrationTest {
         when(adminUseCases.buscarChamados(usuario, statusAtrasadoId, null, null, PageRequest.of(0, 1)))
                 .thenReturn(new PageResult<>(List.of(), 3, 3, 0, 1));
 
-        mockMvc.perform(get("/admin").with(authentication(admin)))
+        mockMvc.perform(get("/admin").with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador())))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"))
                 .andExpect(model().attribute("totalChamadosAtrasados", 3L));
@@ -120,7 +132,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/vinculos-morador")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
                                 .param("moradorEmail", "ana")
                                 .param("cadastradosEmail", "mar")
                                 .param("cadastradosPage", "1")
@@ -146,7 +158,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/blocos")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
                                 .param("page", "2")
                                 .param("size", "15")
                 )
@@ -187,7 +199,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/blocos/{blocoId}", blocoId)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/blocos/detalhe"))
@@ -222,7 +234,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
                                 .param("statusId", statusId.toString())
                                 .param("moradorNome", "Ana")
                                 .param("dataAbertura", "2026-04-10")
@@ -261,7 +273,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/status-chamado")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
                                 .param("statusId", statusId.toString())
                 )
                 .andExpect(status().isOk())
@@ -276,7 +288,8 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         delete("/admin/usuarios/{usuarioId}", usuarioId)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
+                                .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/usuarios"));
@@ -320,7 +333,8 @@ class AdminWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/admin/chamados/{chamadoId}/comentarios", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador()))
+                                .with(csrf())
                                 .param("mensagem", "Segue analise")
                 )
                 .andExpect(status().is3xxRedirection())

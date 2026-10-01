@@ -1,4 +1,10 @@
-package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
+package br.com.dunnastecnologia.chamados.integration.controller.web;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,15 +13,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.AuthWebController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.HomeWebController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.WebControllerSupport;
 
 @WebMvcTest({AuthWebController.class, HomeWebController.class})
-@AutoConfigureMockMvc(addFilters = false)
-@Import(WebControllerSupport.class)
+@AutoConfigureMockMvc
+@Import({WebControllerSupport.class, TestSecurityConfig.class})
 class AuthAndHomeWebControllerIntegrationTest {
 
     @Autowired
@@ -30,7 +34,7 @@ class AuthAndHomeWebControllerIntegrationTest {
 
     @Test
     void homeDeveRedirecionarAdministradorParaPainelCorreto() throws Exception {
-        mockMvc.perform(get("/").with(authentication(WebTestAuthenticationFactory.administrador())))
+        mockMvc.perform(get("/").with(securityContext(WebTestAuthenticationFactory.securityContextAdministrador())))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
     }

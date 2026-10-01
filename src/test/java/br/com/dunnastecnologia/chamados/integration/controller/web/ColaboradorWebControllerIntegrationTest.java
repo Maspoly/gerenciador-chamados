@@ -1,14 +1,24 @@
-package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
+package br.com.dunnastecnologia.chamados.integration.controller.web;
 
-import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.ColaboradorUseCases;
-import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
-import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
-import br.com.dunnastecnologia.chamados.domain.model.Chamado;
-import br.com.dunnastecnologia.chamados.domain.model.Comentario;
-import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
-import br.com.dunnastecnologia.chamados.infrastructure.controller.api.ColaboradorChamadoApiController;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.securityContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -19,27 +29,21 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.ColaboradorUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
+import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Chamado;
+import br.com.dunnastecnologia.chamados.domain.model.Comentario;
+import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.api.ColaboradorChamadoApiController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.ColaboradorWebController;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.WebControllerSupport;
 
 @WebMvcTest({ColaboradorWebController.class, ColaboradorChamadoApiController.class})
-@AutoConfigureMockMvc(addFilters = false)
-@Import(WebControllerSupport.class)
+@AutoConfigureMockMvc
+@Import({WebControllerSupport.class, TestSecurityConfig.class})
 class ColaboradorWebControllerIntegrationTest {
 
     @Autowired
@@ -78,7 +82,7 @@ class ColaboradorWebControllerIntegrationTest {
         when(colaboradorUseCases.buscarChamados(colaborador, statusAtrasadoId, null, null, null, PageRequest.of(0, 1)))
                 .thenReturn(new PageResult<>(List.of(), 2, 2, 0, 1));
 
-        mockMvc.perform(get("/colaborador").with(authentication(colaboradorAuth)))
+        mockMvc.perform(get("/colaborador").with(securityContext(WebTestAuthenticationFactory.securityContextColaborador())))
                 .andExpect(status().isOk())
                 .andExpect(view().name("colaborador/dashboard"))
                 .andExpect(model().attribute("totalChamadosAtrasados", 2L));
@@ -105,7 +109,7 @@ class ColaboradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/colaborador/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextColaborador()))
                                 .param("statusId", statusId.toString())
                                 .param("tipoChamadoId", tipoChamadoId.toString())
                                 .param("unidade", "A-101")
@@ -147,7 +151,8 @@ class ColaboradorWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/colaborador/chamados/{chamadoId}/comentarios", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextColaborador()))
+                                .with(csrf())
                                 .param("mensagem", "Atualizacao do atendimento")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -183,7 +188,8 @@ class ColaboradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         patch("/colaborador/chamados/{chamadoId}/status", chamadoId)
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(securityContext(WebTestAuthenticationFactory.securityContextColaborador()))
+                                .with(csrf())
                                 .param("statusId", statusId.toString())
                 )
                 .andExpect(status().is3xxRedirection())

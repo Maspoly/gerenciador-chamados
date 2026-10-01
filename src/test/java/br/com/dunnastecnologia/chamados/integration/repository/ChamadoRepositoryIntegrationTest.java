@@ -1,24 +1,46 @@
-package br.com.dunnastecnologia.chamados.infrastructure.repository;
+package br.com.dunnastecnologia.chamados.integration.repository;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import br.com.dunnastecnologia.chamados.domain.model.Chamado;
 import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
 import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
+import br.com.dunnastecnologia.chamados.infrastructure.repository.ChamadoRepository;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest(properties = {
-        "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.datasource.url=jdbc:h2:mem:chamado-atraso;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
-        "spring.datasource.driver-class-name=org.h2.Driver"
+    "spring.flyway.enabled=true",
+    "spring.jpa.hibernate.ddl-auto=validate"
 })
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
 class ChamadoRepositoryIntegrationTest {
+
+    @Container
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+        .withDatabaseName("chamados_test")
+        .withUsername("postgres")
+        .withPassword("postgres");
+
+    @DynamicPropertySource
+    static void configureDatasource(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+    registry.add("spring.datasource.username", POSTGRES::getUsername);
+    registry.add("spring.datasource.password", POSTGRES::getPassword);
+    registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+    }
 
     @Autowired
     private ChamadoRepository chamadoRepository;

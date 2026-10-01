@@ -3,8 +3,6 @@ package br.com.dunnastecnologia.chamados.integration.controller.web;
 import java.util.UUID;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import br.com.dunnastecnologia.chamados.domain.model.Administrador;
 import br.com.dunnastecnologia.chamados.domain.model.Colaborador;
@@ -12,39 +10,21 @@ import br.com.dunnastecnologia.chamados.domain.model.Morador;
 import br.com.dunnastecnologia.chamados.domain.model.Usuario;
 import br.com.dunnastecnologia.chamados.infrastructure.security.adapter.UserDetailsImpl;
 
-public final class WebTestAuthenticationFactory {
+final class TestWebAuthenticationFactory {
 
-    private WebTestAuthenticationFactory() {
+    private TestWebAuthenticationFactory() {
     }
 
-    public static UsernamePasswordAuthenticationToken administrador() {
+    static UsernamePasswordAuthenticationToken administrador() {
         return authenticationFor(usuarioAdministrador());
     }
 
-    public static SecurityContext securityContextAdministrador() {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(administrador());
-        return context;
-    }
-
-    public static UsernamePasswordAuthenticationToken colaborador() {
+    static UsernamePasswordAuthenticationToken colaborador() {
         return authenticationFor(usuarioColaborador());
     }
 
-    public static SecurityContext securityContextColaborador() {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(colaborador());
-        return context;
-    }
-
-    public static UsernamePasswordAuthenticationToken morador() {
+    static UsernamePasswordAuthenticationToken morador() {
         return authenticationFor(usuarioMorador());
-    }
-
-    public static SecurityContext securityContextMorador() {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(morador());
-        return context;
     }
 
     private static UsernamePasswordAuthenticationToken authenticationFor(Usuario usuario) {
