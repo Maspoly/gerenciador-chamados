@@ -28,11 +28,11 @@ public interface ReservaUseCases {
             AuthenticatedUser administrador
     );
 
-	Reserva cancelarReserva(
-        UUID reservaId,
-        String motivo,
-        AuthenticatedUser usuarioLogado
-	);
+    Reserva cancelarReserva(
+            UUID reservaId,
+            String motivo,
+            AuthenticatedUser usuarioLogado
+    );
 
     List<Reserva> listarMinhasReservas(
             AuthenticatedUser morador
@@ -43,31 +43,33 @@ public interface ReservaUseCases {
     );
 
     List<Reserva> listarAprovadasPorAreaEPeriodo(
-        AuthenticatedUser morador,
-        UUID areaComumId,
-        LocalDateTime inicio,
-        LocalDateTime fim
-	);
-	List<Reserva> listarPorStatus(
-			AuthenticatedUser administrador,
-			StatusReserva status
-	);
-	List<Reserva> listarCalendarioAdministrador(
-        AuthenticatedUser administrador,
-        UUID areaComumId,
-        LocalDateTime inicio,
-        LocalDateTime fim
-	);
-
-	String buscarMotivoCancelamento(
-        AuthenticatedUser morador,
-        UUID reservaId
+            AuthenticatedUser morador,
+            UUID areaComumId,
+            LocalDateTime inicio,
+            LocalDateTime fim
     );
 
-	List<Reserva> listarDisponibilidadePorAreaEPeriodo(
-        AuthenticatedUser morador,
-        UUID areaComumId,
-        LocalDateTime inicio,
-        LocalDateTime fim
-	);
+    List<Reserva> listarPorStatus(
+            AuthenticatedUser administrador,
+            StatusReserva status
+    );
+
+    List<Reserva> listarCalendarioAdministrador(
+            AuthenticatedUser administrador,
+            UUID areaComumId,
+            LocalDateTime inicio,
+            LocalDateTime fim
+    );
+
+    String buscarMotivoCancelamento(
+            AuthenticatedUser morador,
+            UUID reservaId
+    );
+
+    List<Reserva> listarDisponibilidadePorAreaEPeriodo(
+            AuthenticatedUser morador,
+            UUID areaComumId,
+            LocalDateTime inicio,
+            LocalDateTime fim
+    );
 }

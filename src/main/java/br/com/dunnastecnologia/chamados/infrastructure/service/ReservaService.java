@@ -299,7 +299,7 @@ public class ReservaService implements ReservaUseCases {
         return reservaRepository.findAllByOrderByDataCriacaoDesc();
     }
 
-    public Reserva buscarPorId(UUID id) {
+        private Reserva buscarPorId(UUID id) {
         return reservaRepository
                 .findById(id)
                 .orElseThrow(() ->

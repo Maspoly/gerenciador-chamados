@@ -39,45 +39,32 @@ public class AdminReservaApiController {
         this.support = support;
     }
 
-	@PatchMapping("/{reservaId}/aprovar")
-	@Operation(
-			summary = "Aprova uma reserva",
-			tags = "Admin - Reservas"
-	)
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "302", description = "Reserva aprovada com sucesso."),
-			@ApiResponse(responseCode = "400", description = "Reserva nao pode ser aprovada."),
-			@ApiResponse(responseCode = "403", description = "Acesso negado.")
-	})
-	public String aprovarReserva(
-			Authentication authentication,
-			@PathVariable UUID reservaId,
-			RedirectAttributes redirectAttributes
-	) {
-	var currentUser = support.authenticatedUser(authentication);
+    @PatchMapping("/{reservaId}/aprovar")
+    @Operation(
+            summary = "Aprova uma reserva",
+            tags = "Admin - Reservas"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "302", description = "Reserva aprovada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Reserva nao pode ser aprovada."),
+            @ApiResponse(responseCode = "403", description = "Acesso negado.")
+    })
+    public String aprovarReserva(
+            Authentication authentication,
+            @PathVariable UUID reservaId,
+            RedirectAttributes redirectAttributes
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
 
-	try {
+        try {
+            reservaUseCases.aprovarReserva(reservaId, currentUser);
+            redirectAttributes.addFlashAttribute("successMessage", "Reserva aprovada.");
+        } catch (IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
 
-			reservaUseCases.aprovarReserva(
-					reservaId,
-					currentUser
-			);
-
-			redirectAttributes.addFlashAttribute(
-					"successMessage",
-					"Reserva aprovada."
-			);
-
-	} catch (IllegalStateException exception) {
-
-			redirectAttributes.addFlashAttribute(
-					"errorMessage",
-					exception.getMessage()
-			);
-	}
-
-	return "redirect:/admin/reservas";
-	}
+        return "redirect:/admin/reservas";
+    }
 
     @PatchMapping("/{reservaId}/negar")
     @Operation(
@@ -121,72 +108,48 @@ public class AdminReservaApiController {
             @ApiResponse(responseCode = "400", description = "Reserva nao pode ser cancelada."),
             @ApiResponse(responseCode = "403", description = "Acesso negado.")
     })
-	public String cancelarReserva(
-        Authentication authentication,
-        @PathVariable UUID reservaId,
-		@RequestParam(required = false) String motivo,
-        RedirectAttributes redirectAttributes
-	) {
-		var currentUser =
-				support.authenticatedUser(authentication);
+    public String cancelarReserva(
+            Authentication authentication,
+            @PathVariable UUID reservaId,
+            @RequestParam(required = false) String motivo,
+            RedirectAttributes redirectAttributes
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
 
-		try {
+        try {
+            reservaUseCases.cancelarReserva(reservaId, motivo, currentUser);
+            redirectAttributes.addFlashAttribute("successMessage", "Reserva cancelada.");
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
 
-			reservaUseCases.cancelarReserva(
-					reservaId,
-					motivo,
-					currentUser
-			);
+        return "redirect:/admin/reservas";
+    }
 
-			redirectAttributes.addFlashAttribute(
-					"successMessage",
-					"Reserva cancelada."
-			);
+    @GetMapping("/calendario")
+    @ResponseBody
+    @Operation(
+            summary = "Lista reservas para o calendario do administrador",
+            tags = "Admin - Reservas"
+    )
+    public List<Map<String, Object>> listarCalendario(
+            Authentication authentication,
+            @RequestParam UUID areaComumId,
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime inicio,
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime fim
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
+        var reservas = reservaUseCases.listarCalendarioAdministrador(
+                currentUser,
+                areaComumId,
+                inicio,
+                fim
+        );
 
-		} catch (IllegalStateException | IllegalArgumentException exception) {
-
-			redirectAttributes.addFlashAttribute(
-					"errorMessage",
-					exception.getMessage()
-			);
-		}
-
-		return "redirect:/admin/reservas";
-	}
-
-	@GetMapping("/calendario")
-	@ResponseBody
-	@Operation(
-			summary = "Lista reservas para o calendario do administrador",
-			tags = "Admin - Reservas"
-	)
-	public List<Map<String, Object>> listarCalendario(
-			Authentication authentication,
-
-			@RequestParam UUID areaComumId,
-
-			@RequestParam
-			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-			LocalDateTime inicio,
-
-			@RequestParam
-			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-			LocalDateTime fim
-	) {
-		var currentUser =
-				support.authenticatedUser(authentication);
-
-		var reservas =
-				reservaUseCases.listarCalendarioAdministrador(
-						currentUser,
-						areaComumId,
-						inicio,
-						fim
-				);
-
-		return support.mapContent(
-				reservas,
-				support::toReservaMap
-		);
-	}
+        return support.mapContent(reservas, support::toReservaMap);
+    }
 }

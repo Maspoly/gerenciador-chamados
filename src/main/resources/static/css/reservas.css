@@ -1,7 +1,3 @@
-/* =========================
-   MODAIS
-   ========================= */
-
 .reserva-modal,
 .reserva-action-modal {
     border: none;
@@ -22,10 +18,6 @@
     background: rgba(0, 0, 0, 0.45);
 }
 
-/* =========================
-   CABECALHOS DOS MODAIS
-   ========================= */
-
 .reserva-modal-header,
 .reserva-action-modal-header,
 .reserva-calendar-header {
@@ -43,10 +35,6 @@
 .reserva-calendar-header {
     margin-bottom: 16px;
 }
-
-/* =========================
-   CALENDARIO
-   ========================= */
 
 .reserva-calendar-weekdays,
 .reserva-calendar-days {
@@ -81,10 +69,6 @@
     visibility: hidden;
 }
 
-/* =========================
-   DIA COM RESERVA APROVADA
-   ========================= */
-
 .reserva-calendar-day.has-reservation {
     background-color: var(--primary);
     color: #ffffff;
@@ -97,18 +81,6 @@
     background-color: var(--primary-strong);
     color: #ffffff;
 }
-
-/* =========================
-   DIA COM SOLICITACAO
-   ========================= */
-
-/*
- * SOLICITADA aparece como pendente.
- *
- * Ela pode ser exibida no calendario,
- * mas nao significa que o horario
- * esteja ocupado.
- */
 
 .reserva-calendar-day.has-request {
     background-color: var(--primary-soft);
@@ -123,12 +95,6 @@
     color: var(--primary-strong);
 }
 
-/*
- * Se o mesmo dia possuir pelo menos
- * uma APROVADA e tambem uma SOLICITADA,
- * a APROVADA prevalece visualmente.
- */
-
 .reserva-calendar-day.has-reservation.has-request {
     background-color: var(--primary);
     color: #ffffff;
@@ -138,10 +104,6 @@
     background-color: var(--primary-strong);
     color: #ffffff;
 }
-
-/* =========================
-   LEGENDA DO CALENDARIO
-   ========================= */
 
 .reserva-calendar-legend {
     display: flex;
@@ -169,22 +131,14 @@
     flex-shrink: 0;
 }
 
-/* Reserva aprovada / horario ocupado */
-
 .reserva-calendar-legend-color.approved {
     background-color: var(--primary);
 }
-
-/* Solicitacao pendente */
 
 .reserva-calendar-legend-color.requested {
     background-color: rgba(13, 92, 99, 0.24);
     border: 1px solid rgba(13, 92, 99, 0.4);
 }
-
-/* =========================
-   HORARIOS DO DIA
-   ========================= */
 
 .reserva-calendar-schedule {
     margin-top: 24px;
@@ -207,31 +161,11 @@
     border-bottom: none;
 }
 
-/* =========================
-   ACOES DA TABELA
-   ========================= */
-
-/*
- * IMPORTANTE:
- *
- * .cell-actions e um <td>.
- * Ele precisa continuar sendo uma
- * celula normal da tabela.
- *
- * O flex fica dentro de
- * .reservation-actions.
- */
-
 .reservas-table td.cell-actions,
 .cell-actions {
     display: table-cell !important;
     vertical-align: middle;
 }
-
-/*
- * Aprovar e Negar ficam
- * um ao lado do outro.
- */
 
 .reservation-actions {
     display: flex;
@@ -260,10 +194,6 @@
     flex-shrink: 0;
 }
 
-/* =========================
-   MOTIVOS
-   ========================= */
-
 .reserva-motivo {
     margin-top: 8px;
     margin-bottom: 0;
@@ -274,20 +204,12 @@
     color: var(--muted);
 }
 
-/* =========================
-   TEXTAREA DOS MODAIS
-   ========================= */
-
 .reserva-action-modal textarea {
     width: 100%;
     min-height: 110px;
 
     resize: vertical;
 }
-
-/* =========================
-   BOTOES DOS MODAIS
-   ========================= */
 
 .reserva-modal-actions {
     display: flex;
@@ -298,10 +220,6 @@
 
     margin-top: 24px;
 }
-
-/* =========================
-   FILTRO ADMIN
-   ========================= */
 
 .reservas-filter {
     display: flex;
@@ -331,10 +249,6 @@
     min-width: 100px;
 }
 
-/* =========================
-   TABELA DE RESERVAS
-   ========================= */
-
 .reservas-table {
     width: 100%;
 }
@@ -344,28 +258,11 @@
     vertical-align: middle;
 }
 
-/*
- * Espaco suficiente para:
- *
- * [Aprovar] [Negar]
- *
- * sem jogar um botao para baixo.
- */
-
 .reservas-table th:last-child,
 .reservas-table td:last-child {
     width: 220px;
     min-width: 220px;
 }
-
-/*
- * Mantem todas as celulas
- * participando normalmente da tabela.
- *
- * Isso evita o problema visual
- * de linhas quebradas em reservas
- * CANCELADAS e NEGADAS.
- */
 
 .reservas-table td {
     display: table-cell;
@@ -374,10 +271,6 @@
 .reservas-table tr {
     display: table-row;
 }
-
-/* =========================
-   CONTROLES DO CALENDARIO ADMIN
-   ========================= */
 
 .reservas-calendar-tools {
     display: flex;
@@ -400,10 +293,6 @@
     width: auto;
 }
 
-/* =========================
-   RESPONSIVIDADE
-   ========================= */
-
 @media (max-width: 768px) {
     .reservas-calendar-tools,
     .reservas-filter {
@@ -420,10 +309,6 @@
     .reservas-filter button {
         width: 100%;
     }
-
-    /* =========================
-       CALENDARIO
-       ========================= */
 
     .reserva-calendar-weekdays,
     .reserva-calendar-days {
@@ -442,20 +327,12 @@
         gap: 8px;
     }
 
-    /* =========================
-       MODAIS
-       ========================= */
-
     .reserva-modal,
     .reserva-action-modal {
         width: 94vw;
 
         padding: 18px;
     }
-
-    /* =========================
-       ACOES DA TABELA
-       ========================= */
 
     .reservation-actions {
         flex-wrap: wrap;
@@ -467,10 +344,6 @@
         min-width: 180px;
     }
 }
-/* =========================
-   CALENDARIO - MINHAS RESERVAS
-   ========================= */
-
 .reserva-calendar-day.has-own-reservation {
     background-color: var(--accent-soft);
     color: var(--ink);
@@ -482,10 +355,6 @@
     background-color: rgba(219, 162, 74, 0.24);
     color: var(--ink);
 }
-
-/* =========================
-   STATUS NO CALENDARIO
-   ========================= */
 
 .reserva-calendar-status {
     display: inline-flex;

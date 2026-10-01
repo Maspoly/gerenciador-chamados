@@ -50,47 +50,31 @@ public class MoradorReservaApiController {
             @ApiResponse(responseCode = "400", description = "Dados invalidos ou regra de negocio violada."),
             @ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado.")
     })
-        public String solicitarReserva(
-        Authentication authentication,
-        @RequestParam UUID areaComumId,
+	public String solicitarReserva(
+			Authentication authentication,
+			@RequestParam UUID areaComumId,
+			@RequestParam
+			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+			LocalDateTime dataInicio,
+			@RequestParam
+			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+			LocalDateTime dataFim,
+			RedirectAttributes redirectAttributes
+	) {
+		var currentUser = support.authenticatedUser(authentication);
 
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        LocalDateTime dataInicio,
+		try {
+			reservaUseCases.solicitarReserva(currentUser, areaComumId, dataInicio, dataFim);
+			redirectAttributes.addFlashAttribute(
+					"successMessage",
+					"Solicitacao de reserva registrada."
+			);
+		} catch (IllegalArgumentException exception) {
+			redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+		}
 
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        LocalDateTime dataFim,
-
-        RedirectAttributes redirectAttributes
-) {
-    var currentUser =
-            support.authenticatedUser(authentication);
-
-    try {
-
-        reservaUseCases.solicitarReserva(
-                currentUser,
-                areaComumId,
-                dataInicio,
-                dataFim
-        );
-
-        redirectAttributes.addFlashAttribute(
-                "successMessage",
-                "Solicitacao de reserva registrada."
-        );
-
-    } catch (IllegalArgumentException exception) {
-
-        redirectAttributes.addFlashAttribute(
-                "errorMessage",
-                exception.getMessage()
-        );
-    }
-
-    return "redirect:/morador/reservas";
-}
+		return "redirect:/morador/reservas";
+	}
 
     @PatchMapping("/{reservaId}/cancelar")
     @Operation(
@@ -102,97 +86,60 @@ public class MoradorReservaApiController {
             @ApiResponse(responseCode = "400", description = "Reserva nao pode ser cancelada."),
             @ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado.")
     })
-        public String cancelarReserva(
-                Authentication authentication,
-                @PathVariable UUID reservaId,
-                @RequestParam(required = false) String motivo,
-                RedirectAttributes redirectAttributes
-        ) {
+    public String cancelarReserva(
+            Authentication authentication,
+            @PathVariable UUID reservaId,
+            @RequestParam(required = false) String motivo,
+            RedirectAttributes redirectAttributes
+    ) {
         var currentUser = support.authenticatedUser(authentication);
 
-        reservaUseCases.cancelarReserva(
-                reservaId,
-                motivo,
-                currentUser
-        );
-
-        redirectAttributes.addFlashAttribute(
-                "successMessage",
-                "Reserva cancelada."
-        );
+        reservaUseCases.cancelarReserva(reservaId, motivo, currentUser);
+        redirectAttributes.addFlashAttribute("successMessage", "Reserva cancelada.");
 
         return "redirect:/morador/reservas";
     }
 
- 	@GetMapping("/disponibilidade")
+	@GetMapping("/disponibilidade")
 	@ResponseBody
 	@Operation(
 			summary = "Lista a disponibilidade de uma area comum",
 			tags = "13 - Morador Web - Reservas"
 	)
 	@ApiResponses(value = {
-			@ApiResponse(
-					responseCode = "200",
-					description = "Disponibilidade consultada com sucesso."
-			),
-			@ApiResponse(
-					responseCode = "400",
-					description = "Parametros da consulta invalidos."
-			),
-			@ApiResponse(
-					responseCode = "403",
-					description = "Acesso negado para o perfil autenticado."
-			)
+			@ApiResponse(responseCode = "200", description = "Disponibilidade consultada com sucesso."),
+			@ApiResponse(responseCode = "400", description = "Parametros da consulta invalidos."),
+			@ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado.")
 	})
 	public List<Map<String, Object>> listarDisponibilidade(
 			Authentication authentication,
-
 			@RequestParam UUID areaComumId,
-
 			@RequestParam
 			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 			LocalDateTime inicio,
-
 			@RequestParam
 			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 			LocalDateTime fim
 	) {
-	var currentUser =
-			support.authenticatedUser(authentication);
+		var currentUser = support.authenticatedUser(authentication);
+		var reservas = reservaUseCases.listarDisponibilidadePorAreaEPeriodo(
+				currentUser,
+				areaComumId,
+				inicio,
+				fim
+		);
 
-	var reservas =
-			reservaUseCases.listarDisponibilidadePorAreaEPeriodo(
-					currentUser,
-					areaComumId,
-					inicio,
-					fim
-			);
-
-	return reservas.stream()
-			.map(reserva -> {
-
-					Map<String, Object> dados =
-							new java.util.LinkedHashMap<>();
-
-					dados.put(
-							"dataHoraInicio",
-							reserva.getDataHoraInicio()
-					);
-
-					dados.put(
-							"dataHoraFim",
-							reserva.getDataHoraFim()
-					);
-
-					dados.put(
-							"status",
-							reserva.getStatus().name()
-					);
-
+		return reservas.stream()
+				.map(reserva -> {
+					Map<String, Object> dados = new java.util.LinkedHashMap<>();
+					dados.put("dataHoraInicio", reserva.getDataHoraInicio());
+					dados.put("dataHoraFim", reserva.getDataHoraFim());
+					dados.put("status", reserva.getStatus().name());
 					return dados;
-			})
-			.toList();
+				})
+				.toList();
 	}
+
 	@GetMapping("/minhas/calendario")
 	@ResponseBody
 	@Operation(
@@ -200,52 +147,22 @@ public class MoradorReservaApiController {
 			tags = "13 - Morador Web - Reservas"
 	)
 	@ApiResponses(value = {
-			@ApiResponse(
-					responseCode = "200",
-					description = "Reservas do morador consultadas com sucesso."
-			),
-			@ApiResponse(
-					responseCode = "403",
-					description = "Acesso negado para o perfil autenticado."
-			)
+			@ApiResponse(responseCode = "200", description = "Reservas do morador consultadas com sucesso."),
+			@ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado.")
 	})
 	public List<Map<String, Object>> listarMinhasReservasCalendario(
 			Authentication authentication
 	) {
-		var currentUser =
-				support.authenticatedUser(authentication);
-
-		var reservas =
-				reservaUseCases.listarMinhasReservas(
-						currentUser
-				);
+		var currentUser = support.authenticatedUser(authentication);
+		var reservas = reservaUseCases.listarMinhasReservas(currentUser);
 
 		return reservas.stream()
 				.map(reserva -> {
-
-					Map<String, Object> dados =
-							new java.util.LinkedHashMap<>();
-
-					dados.put(
-							"areaComumNome",
-							reserva.getAreaComum().getNome()
-					);
-
-					dados.put(
-							"dataHoraInicio",
-							reserva.getDataHoraInicio()
-					);
-
-					dados.put(
-							"dataHoraFim",
-							reserva.getDataHoraFim()
-					);
-
-					dados.put(
-							"status",
-							reserva.getStatus().name()
-					);
-
+					Map<String, Object> dados = new java.util.LinkedHashMap<>();
+					dados.put("areaComumNome", reserva.getAreaComum().getNome());
+					dados.put("dataHoraInicio", reserva.getDataHoraInicio());
+					dados.put("dataHoraFim", reserva.getDataHoraFim());
+					dados.put("status", reserva.getStatus().name());
 					return dados;
 				})
 				.toList();

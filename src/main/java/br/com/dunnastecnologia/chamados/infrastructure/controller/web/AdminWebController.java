@@ -496,8 +496,8 @@ public class AdminWebController {
     }
 
     @Operation(
-        summary = "Lista todas as reservas para o administrador",
-        tags = "02 - Admin Web - Paginas"
+            summary = "Lista todas as reservas para o administrador",
+            tags = "02 - Admin Web - Paginas"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -519,53 +519,27 @@ public class AdminWebController {
 
             Model model
     ) {
-        var currentUser =
-                support.authenticatedUser(authentication);
-        var areasCalendario =
-            areaComumUseCases.listarTodas(currentUser);
+        var currentUser = support.authenticatedUser(authentication);
+        var areasCalendario = areaComumUseCases.listarTodas(currentUser);
 
-        var reservas =
-                status == null
-                        ? reservaUseCases.listarTodas(currentUser)
-                        : reservaUseCases.listarPorStatus(
-                                currentUser,
-                                status
-                        );
+        var reservas = status == null
+            ? reservaUseCases.listarTodas(currentUser)
+            : reservaUseCases.listarPorStatus(currentUser, status);
 
-        model.addAttribute(
-                "pageTitle",
-                "Reservas"
-        );
-
-        model.addAttribute(
-                "reservas",
-                support.mapContent(
-                        reservas,
-                        support::toReservaMap
-                )
-        );
-
-        model.addAttribute(
-                "statusSelecionado",
-                status == null
-                        ? null
-                        : status.name()
-        );
-
+        model.addAttribute("pageTitle", "Reservas");
+        model.addAttribute("reservas", support.mapContent(reservas, support::toReservaMap));
+        model.addAttribute("statusSelecionado", status == null ? null : status.name());
         model.addAttribute(
             "areasCalendario",
-            support.mapContent(
-                    areasCalendario,
-                    support::toAreaComumMap
-            )
+            support.mapContent(areasCalendario, support::toAreaComumMap)
         );
 
         return "admin/reservas/lista";
     }
 
     @Operation(
-        summary = "Lista as areas comuns",
-        tags = "02 - Admin Web - Paginas"
+            summary = "Lista as areas comuns",
+            tags = "02 - Admin Web - Paginas"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -602,7 +576,7 @@ public class AdminWebController {
 
         return "admin/areas-comuns/lista";
     }
-    
+
     @ModelAttribute("areaComumForm")
     public AreaComumForm areaComumForm() {
         return new AreaComumForm();

@@ -23,9 +23,6 @@
             <section class="two-column-grid">
 
 
-                <%-- ========================= --%>
-                <%-- CADASTRO / EDICAO         --%>
-                <%-- ========================= --%>
 
                 <section class="card">
 
@@ -54,7 +51,6 @@
                     </div>
 
 
-                    <%-- Define a action do formulario --%>
 
                     <c:choose>
 
@@ -84,7 +80,6 @@
                         <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
 
 
-                        <%-- Se estiver editando, envia PATCH --%>
 
                         <c:if test="${not empty areaEmEdicao}">
 
@@ -175,9 +170,6 @@
                 </section>
 
 
-                <%-- ========================= --%>
-                <%-- AREAS CADASTRADAS         --%>
-                <%-- ========================= --%>
 
                 <section class="card">
 
@@ -281,7 +273,6 @@
                                             <div class="toolbar-inline">
 
 
-                                                <%-- EDITAR --%>
 
                                                 <a
                                                     href="${ctx}/admin/areas-comuns?editar=${area.id}"
@@ -291,7 +282,6 @@
                                                 </a>
 
 
-                                                <%-- DESATIVAR --%>
 
                                                 <c:if test="${area.ativa}">
 
@@ -320,7 +310,6 @@
                                                 </c:if>
 
 
-                                                <%-- REATIVAR --%>
 
                                                 <c:if test="${not area.ativa}">
 

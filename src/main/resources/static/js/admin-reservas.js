@@ -1,8 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // ========================================
-    // MODAL - NEGAR RESERVA
-    // ========================================
-
     const negarModal = document.getElementById("negarReservaModal");
 
     const negarForm = document.getElementById("negarReservaForm");
@@ -36,10 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("cancelarNegativaBtn")?.addEventListener("click", () => {
         negarModal?.close();
     });
-
-    // ========================================
-    // MODAL - CANCELAR RESERVA
-    // ========================================
 
     const cancelarModal = document.getElementById("cancelarReservaModal");
 
@@ -75,10 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
         cancelarModal?.close();
     });
 
-    // ========================================
-    // CALENDARIO ADMIN
-    // ========================================
-
     const areaSelect = document.getElementById("adminAreaComumId");
 
     const abrirCalendarioBtn = document.getElementById("abrirCalendarioAdminBtn");
@@ -101,11 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const proximoMesBtn = document.getElementById("proximoMesAdminBtn");
 
-    /*
-     * Se a pagina nao possuir o calendario,
-     * nao precisamos inicializar esta parte.
-     */
-
     if (
         !areaSelect ||
         !abrirCalendarioBtn ||
@@ -123,10 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let reservasCalendario = [];
 
-    // ========================================
-    // ABRIR CALENDARIO
-    // ========================================
-
     abrirCalendarioBtn.addEventListener("click", async () => {
         const areaId = areaSelect.value;
 
@@ -142,28 +121,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         dataAtualCalendario = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-        /*
-         * Abre primeiro o modal para que
-         * o usuario perceba imediatamente
-         * a acao.
-         */
-
         calendarioModal.showModal();
 
         await atualizarCalendario();
     });
 
-    // ========================================
-    // FECHAR CALENDARIO
-    // ========================================
-
     fecharCalendarioBtn?.addEventListener("click", () => {
         calendarioModal.close();
     });
-
-    // ========================================
-    // MES ANTERIOR
-    // ========================================
 
     mesAnteriorBtn?.addEventListener("click", async () => {
         dataAtualCalendario = new Date(
@@ -177,10 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
         await atualizarCalendario();
     });
 
-    // ========================================
-    // PROXIMO MES
-    // ========================================
-
     proximoMesBtn?.addEventListener("click", async () => {
         dataAtualCalendario = new Date(
             dataAtualCalendario.getFullYear(),
@@ -192,10 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         await atualizarCalendario();
     });
-
-    // ========================================
-    // ATUALIZAR CALENDARIO
-    // ========================================
 
     async function atualizarCalendario() {
         try {
@@ -215,10 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ========================================
-    // BUSCAR RESERVAS NO BACKEND
-    // ========================================
-
     async function carregarReservasCalendario() {
         const areaId = areaSelect.value;
 
@@ -232,30 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mes = dataAtualCalendario.getMonth();
 
-        /*
-         * Primeiro instante do mes atual.
-         */
-
         const inicio = new Date(ano, mes, 1, 0, 0, 0);
 
-        /*
-         * Primeiro instante do proximo mes.
-         *
-         * Dessa forma usamos intervalo:
-         *
-         * [inicio, fim)
-         */
-
         const fim = new Date(ano, mes + 1, 1, 0, 0, 0);
-
-        /*
-         * O modal de cancelamento ja possui:
-         *
-         * data-action-base="${ctx}/admin/reservas"
-         *
-         * Reaproveitamos esse valor para
-         * respeitar o context path da aplicacao.
-         */
 
         const baseUrl = cancelarModal?.dataset.actionBase ?? negarModal?.dataset.actionBase;
 
@@ -280,10 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reservasCalendario = await response.json();
     }
 
-    // ========================================
-    // RENDERIZAR CALENDARIO
-    // ========================================
-
     function renderizarCalendario() {
         diasCalendario.innerHTML = "";
 
@@ -304,10 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const totalDias = new Date(ano, mes + 1, 0).getDate();
 
-        // ========================================
-        // ESPACOS ANTES DO PRIMEIRO DIA
-        // ========================================
-
         for (let i = 0; i < primeiroDiaSemana; i++) {
             const vazio = document.createElement("div");
 
@@ -315,10 +239,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             diasCalendario.appendChild(vazio);
         }
-
-        // ========================================
-        // DIAS DO MES
-        // ========================================
 
         for (let dia = 1; dia <= totalDias; dia++) {
             const botaoDia = document.createElement("button");
@@ -339,23 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const possuiCancelada = reservasDoDia.some(reserva => reserva.status === "CANCELADA");
 
-            /*
-             * PRIORIDADE VISUAL
-             *
-             * APROVADA
-             * -> existe ocupacao real.
-             *
-             * SOLICITADA
-             * -> existe pedido pendente.
-             *
-             * NEGADA / CANCELADA
-             * -> apenas historico.
-             *
-             * Se houver APROVADA junto com
-             * qualquer outro estado, a cor
-             * de APROVADA prevalece.
-             */
-
             if (possuiAprovada) {
                 botaoDia.classList.add("has-reservation");
             } else if (possuiSolicitada) {
@@ -367,10 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (possuiCancelada) {
                 botaoDia.classList.add("has-canceled");
             }
-
-            /*
-             * Tooltip simples.
-             */
 
             if (reservasDoDia.length === 1) {
                 botaoDia.title = "1 reserva neste dia";
@@ -386,10 +285,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ========================================
-    // RESERVAS QUE PASSAM PELO DIA
-    // ========================================
-
     function buscarReservasDoDia(ano, mes, dia) {
         const inicioDia = new Date(ano, mes, dia, 0, 0, 0, 0);
 
@@ -400,24 +295,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const fimReserva = new Date(reserva.dataHoraFim);
 
-            /*
-             * Sobreposicao:
-             *
-             * inicioReserva < fimDia
-             * &&
-             * fimReserva > inicioDia
-             *
-             * Isso tambem trata reservas
-             * que atravessam a meia-noite.
-             */
-
             return inicioReserva < fimDia && fimReserva > inicioDia;
         });
     }
-
-    // ========================================
-    // MOSTRAR RESERVAS DE UM DIA
-    // ========================================
 
     function mostrarReservasDoDia(ano, mes, dia) {
         const data = new Date(ano, mes, dia);
@@ -447,35 +327,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             item.className = "reserva-calendar-item";
 
-            // ========================================
-            // DATA / HORARIO
-            // ========================================
-
             const horario = document.createElement("strong");
 
             horario.textContent = `${formatarDataHora(reserva.dataHoraInicio)} - ${formatarDataHora(reserva.dataHoraFim)}`;
 
-            // ========================================
-            // MORADOR
-            // ========================================
-
             const morador = document.createElement("p");
 
             morador.textContent = reserva.moradorNome ? `Morador: ${reserva.moradorNome}` : "Morador nao informado";
-
-            // ========================================
-            // STATUS
-            // ========================================
 
             const status = document.createElement("span");
 
             status.classList.add("reserva-calendar-status", `status-${reserva.status.toLowerCase()}`);
 
             status.textContent = reserva.status;
-
-            // ========================================
-            // MONTAGEM
-            // ========================================
 
             item.appendChild(horario);
 
@@ -487,10 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ========================================
-    // FORMATAR DATA/HORA PARA EXIBICAO
-    // ========================================
-
     function formatarDataHora(valor) {
         const data = new Date(valor);
 
@@ -501,10 +361,6 @@ document.addEventListener("DOMContentLoaded", () => {
             minute: "2-digit",
         });
     }
-
-    // ========================================
-    // FORMATAR DATA PARA O BACKEND
-    // ========================================
 
     function formatarDataBackend(data) {
         const ano = data.getFullYear();

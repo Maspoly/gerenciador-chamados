@@ -27,10 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let reservasDisponibilidade = [];
 
-    // =========================
-    // ABRIR CALENDARIO
-    // =========================
-
     abrirCalendarioBtn.addEventListener("click", async () => {
         if (!areaComumSelect.value) {
             alert("Selecione uma area comum primeiro.");
@@ -51,17 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
         calendarioModal.showModal();
     });
 
-    // =========================
-    // FECHAR
-    // =========================
-
     fecharCalendarioBtn.addEventListener("click", () => {
         calendarioModal.close();
     });
-
-    // =========================
-    // MES ANTERIOR
-    // =========================
 
     mesAnteriorBtn.addEventListener("click", async () => {
         dataAtualCalendario.setMonth(dataAtualCalendario.getMonth() - 1);
@@ -71,10 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarCalendario();
     });
 
-    // =========================
-    // PROXIMO MES
-    // =========================
-
     proximoMesBtn.addEventListener("click", async () => {
         dataAtualCalendario.setMonth(dataAtualCalendario.getMonth() + 1);
 
@@ -82,10 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderizarCalendario();
     });
-
-    // =========================
-    // RENDERIZAR CALENDARIO
-    // =========================
 
     function renderizarCalendario() {
         const ano = dataAtualCalendario.getFullYear();
@@ -103,10 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         diasCalendario.innerHTML = "";
 
-        // =========================
-        // ESPACOS ANTES DO DIA 1
-        // =========================
-
         for (let i = 0; i < primeiroDiaSemana; i++) {
             const vazio = document.createElement("div");
 
@@ -114,10 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             diasCalendario.appendChild(vazio);
         }
-
-        // =========================
-        // DIAS DO MES
-        // =========================
 
         for (let dia = 1; dia <= totalDias; dia++) {
             const botaoDia = document.createElement("button");
@@ -150,10 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // =========================
-    // FORMATAR DATA PARA SPRING
-    // =========================
-
     function formatarDataParaBackend(data) {
         const ano = data.getFullYear();
 
@@ -163,10 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return `${ano}-${mes}-${dia}T00:00:00`;
     }
-
-    // =========================
-    // BUSCAR DISPONIBILIDADE
-    // =========================
 
     async function carregarDisponibilidade() {
         const areaComumId = areaComumSelect.value;
@@ -194,11 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reservasDisponibilidade = await resposta.json();
     }
 
-    // =========================
-    // VERIFICAR SOBREPOSICAO
-    // COM UM DIA
-    // =========================
-
     function reservaSobrepoeDia(reserva, ano, mes, dia) {
         const inicioDia = new Date(ano, mes, dia, 0, 0, 0, 0);
 
@@ -211,17 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return inicioReserva < fimDia && fimReserva > inicioDia;
     }
 
-    // =========================
-    // RESERVAS DE UM DIA
-    // =========================
-
     function buscarReservasDoDia(ano, mes, dia) {
         return reservasDisponibilidade.filter(reserva => reservaSobrepoeDia(reserva, ano, mes, dia));
     }
-
-    // =========================
-    // MOSTRAR HORARIOS DO DIA
-    // =========================
 
     function mostrarHorariosDoDia(ano, mes, dia) {
         const reservasDoDia = buscarReservasDoDia(ano, mes, dia);

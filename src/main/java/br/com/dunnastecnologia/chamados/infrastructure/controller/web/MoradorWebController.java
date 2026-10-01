@@ -36,26 +36,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @PreAuthorize("hasRole('MORADOR')")
 public class MoradorWebController {
 
-private final MoradorUseCases moradorUseCases;
+    private final MoradorUseCases moradorUseCases;
+    private final TipoChamadoUseCase tipoChamadoUseCase;
+    private final StatusChamadoUseCase statusChamadoUseCase;
+    private final AnexoChamadoUseCases anexoChamadoUseCases;
+    private final ComentarioUseCase comentarioUseCase;
+    private final ReservaUseCases reservaUseCases;
+    private final WebControllerSupport support;
+    private final AreaComumUseCases areaComumUseCases;
 
-        private final TipoChamadoUseCase tipoChamadoUseCase;
-        private final StatusChamadoUseCase statusChamadoUseCase;
-        private final AnexoChamadoUseCases anexoChamadoUseCases;
-        private final ComentarioUseCase comentarioUseCase;
-        private final ReservaUseCases reservaUseCases;
-        private final WebControllerSupport support;
-        private final AreaComumUseCases areaComumUseCases;
-
-        public MoradorWebController(
-                MoradorUseCases moradorUseCases,
-                TipoChamadoUseCase tipoChamadoUseCase,
-                StatusChamadoUseCase statusChamadoUseCase,
-                AnexoChamadoUseCases anexoChamadoUseCases,
-                ComentarioUseCase comentarioUseCase,
-                ReservaUseCases reservaUseCases,
-                AreaComumUseCases areaComumUseCases,
-                WebControllerSupport support
-        ) {
+    public MoradorWebController(
+            MoradorUseCases moradorUseCases,
+            TipoChamadoUseCase tipoChamadoUseCase,
+            StatusChamadoUseCase statusChamadoUseCase,
+            AnexoChamadoUseCases anexoChamadoUseCases,
+            ComentarioUseCase comentarioUseCase,
+            ReservaUseCases reservaUseCases,
+            AreaComumUseCases areaComumUseCases,
+            WebControllerSupport support
+    ) {
         this.moradorUseCases = moradorUseCases;
         this.tipoChamadoUseCase = tipoChamadoUseCase;
         this.statusChamadoUseCase = statusChamadoUseCase;
@@ -64,7 +63,7 @@ private final MoradorUseCases moradorUseCases;
         this.reservaUseCases = reservaUseCases;
         this.areaComumUseCases = areaComumUseCases;
         this.support = support;
-        }
+    }
 
     @ModelAttribute("abrirChamadoForm")
     public AbrirChamadoForm abrirChamadoForm() {
@@ -198,153 +197,96 @@ private final MoradorUseCases moradorUseCases;
         return "morador/chamados/detalhe";
     }
 
-	@GetMapping("/reservas")
-	@Transactional(readOnly = true)
-	@Operation(
-			summary = "Lista as reservas do morador autenticado",
-			tags = "12 - Morador Web - Paginas"
-	)
-	@ApiResponses(value = {
-			@ApiResponse(
-					responseCode = "200",
-					description = "Pagina de reservas do morador renderizada com sucesso."
-			),
-			@ApiResponse(
-					responseCode = "403",
-					description = "Acesso negado para o perfil autenticado."
-			)
-	})
-	public String listarReservas(
-			Authentication authentication,
+    @GetMapping("/reservas")
+    @Transactional(readOnly = true)
+    @Operation(summary = "Lista as reservas do morador autenticado", tags = "12 - Morador Web - Paginas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagina de reservas do morador renderizada com sucesso."),
+            @ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado.")
+    })
+    public String listarReservas(
+            Authentication authentication,
+            @RequestParam(required = false) UUID areaComumId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataInicio,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataFim,
+            Model model
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
+        var minhasReservas = reservaUseCases.listarMinhasReservas(currentUser);
+        var areasAtivas = areaComumUseCases.listarAtivas();
 
-			@RequestParam(required = false)
-			UUID areaComumId,
+        LocalDate inicioPeriodo = dataInicio != null
+                ? dataInicio
+                : LocalDate.now().withDayOfMonth(1);
+        LocalDate fimPeriodo = dataFim != null
+                ? dataFim
+                : inicioPeriodo.plusMonths(1).minusDays(1);
 
-			@RequestParam(required = false)
-			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-			LocalDate dataInicio,
+        if (fimPeriodo.isBefore(inicioPeriodo)) {
+            throw new IllegalArgumentException(
+                    "A data final não pode ser anterior à data inicial."
+            );
+        }
 
-			@RequestParam(required = false)
-			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-			LocalDate dataFim,
+        UUID areaSelecionadaId = areaComumId;
+        if (areaSelecionadaId == null && !areasAtivas.isEmpty()) {
+            areaSelecionadaId = areasAtivas.get(0).getId();
+        }
 
-			Model model
-	) {
-	var currentUser = support.authenticatedUser(authentication);
+        List<Reserva> reservasAprovadas = List.of();
+        if (areaSelecionadaId != null) {
+            final UUID areaId = areaSelecionadaId;
+            boolean areaAtiva = areasAtivas.stream()
+                    .anyMatch(area -> area.getId().equals(areaId));
 
-	var minhasReservas =
-			reservaUseCases.listarMinhasReservas(currentUser);
-
-	var areasAtivas =
-			areaComumUseCases.listarAtivas();
-
-	LocalDate inicioPeriodo = dataInicio != null
-			? dataInicio
-			: LocalDate.now().withDayOfMonth(1);
-
-	LocalDate fimPeriodo = dataFim != null
-			? dataFim
-			: inicioPeriodo.plusMonths(1).minusDays(1);
-
-	if (fimPeriodo.isBefore(inicioPeriodo)) {
-			throw new IllegalArgumentException(
-					"A data final não pode ser anterior à data inicial."
-			);
-	}
-
-	UUID areaSelecionadaId = areaComumId;
-
-	if (areaSelecionadaId == null && !areasAtivas.isEmpty()) {
-			areaSelecionadaId = areasAtivas.get(0).getId();
-	}
-
-	List<Reserva> reservasAprovadas = List.of();
-
-	if (areaSelecionadaId != null) {
-
-			final UUID areaId = areaSelecionadaId;
-
-			boolean areaAtiva = areasAtivas.stream()
-					.anyMatch(area -> area.getId().equals(areaId));
-
-			if (!areaAtiva) {
-			throw new IllegalArgumentException(
-					"Área comum inválida ou desativada."
-			);
-			}
-
-			reservasAprovadas =
-					reservaUseCases.listarAprovadasPorAreaEPeriodo(
-							currentUser,
-							areaSelecionadaId,
-							inicioPeriodo.atStartOfDay(),
-							fimPeriodo.plusDays(1).atStartOfDay()
-					);
-	}
-
-        var reservasMap = minhasReservas.stream()
-        .map(reserva -> {
-
-            var values =
-                    support.toReservaMap(reserva);
-
-            if (reserva.getStatus() == StatusReserva.CANCELADA) {
-
-                String motivoCancelamento =
-                        reservaUseCases.buscarMotivoCancelamento(
-                                currentUser,
-                                reserva.getId()
-                        );
-
-                values.put(
-                        "motivoCancelamento",
-                        motivoCancelamento
+            if (!areaAtiva) {
+                throw new IllegalArgumentException(
+                        "Área comum inválida ou desativada."
                 );
             }
 
-            return values;
-        })
-        .toList();
+            reservasAprovadas = reservaUseCases.listarAprovadasPorAreaEPeriodo(
+                    currentUser,
+                    areaSelecionadaId,
+                    inicioPeriodo.atStartOfDay(),
+                    fimPeriodo.plusDays(1).atStartOfDay()
+            );
+        }
 
+        var reservasMap = minhasReservas.stream()
+                .map(reserva -> {
+                    var values = support.toReservaMap(reserva);
 
-	model.addAttribute("pageTitle", "Minhas Reservas");
+                    if (reserva.getStatus() == StatusReserva.CANCELADA) {
+                        String motivoCancelamento = reservaUseCases.buscarMotivoCancelamento(
+                                currentUser,
+                                reserva.getId()
+                        );
+                        values.put("motivoCancelamento", motivoCancelamento);
+                    }
 
+                    return values;
+                })
+                .toList();
+
+        model.addAttribute("pageTitle", "Minhas Reservas");
+        model.addAttribute("reservas", reservasMap);
         model.addAttribute(
-                "reservas",
-                reservasMap
+                "areasAtivas",
+                support.mapContent(areasAtivas, support::toAreaComumMap)
         );
+        model.addAttribute(
+                "reservasAprovadas",
+                support.mapContent(reservasAprovadas, support::toReservaMap)
+        );
+        model.addAttribute("areaSelecionadaId", areaSelecionadaId);
+        model.addAttribute("dataInicio", inicioPeriodo);
+        model.addAttribute("dataFim", fimPeriodo);
 
-	model.addAttribute(
-			"areasAtivas",
-			support.mapContent(
-					areasAtivas,
-					support::toAreaComumMap
-			)
-	);
-
-	model.addAttribute(
-			"reservasAprovadas",
-			support.mapContent(
-					reservasAprovadas,
-					support::toReservaMap
-			)
-	);
-
-	model.addAttribute(
-			"areaSelecionadaId",
-			areaSelecionadaId
-	);
-
-	model.addAttribute(
-			"dataInicio",
-			inicioPeriodo
-	);
-
-	model.addAttribute(
-			"dataFim",
-			fimPeriodo
-	);
-
-	return "morador/reservas/lista";
-	}
+        return "morador/reservas/lista";
+    }
 }

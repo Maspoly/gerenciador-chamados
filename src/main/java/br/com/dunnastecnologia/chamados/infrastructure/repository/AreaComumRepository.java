@@ -17,24 +17,9 @@ import jakarta.persistence.LockModeType;
 public interface AreaComumRepository
         extends JpaRepository<AreaComum, UUID> {
 
-    /*
-     * Busca apenas as areas comuns ativas.
-     * Utilizado principalmente nas consultas do morador.
-     */
     List<AreaComum> findByAtivaTrue();
 
-
-    /*
-     * Busca uma area comum aplicando lock pessimista de escrita.
-     *
-     * Enquanto uma transacao possuir esse lock,
-     * outra transacao que tentar bloquear a mesma area
-     * devera aguardar.
-     *
-     * Isso sera usado durante a aprovacao das reservas
-     * para impedir duas aprovacoes conflitantes
-     * simultaneas para a mesma area.
-     */
+    // Serializa aprovacoes concorrentes para a mesma area comum.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         SELECT a

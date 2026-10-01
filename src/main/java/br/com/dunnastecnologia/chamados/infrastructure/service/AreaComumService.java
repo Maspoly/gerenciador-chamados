@@ -25,32 +25,20 @@ public class AreaComumService implements AreaComumUseCases {
         this.authenticatedUserValidator = authenticatedUserValidator;
     }
 
-    /**
-     * Lista todas as áreas comuns (utilizado pelo Administrador).
-     */
     public List<AreaComum> listarTodas(AuthenticatedUser administrador) {
         authenticatedUserValidator.assertAdministrador(administrador);
         return areaComumRepository.findAll();
     }
 
-    /**
-     * Lista apenas as áreas ativas (utilizado pelo Morador ao consultar disponibilidade).
-     */
     public List<AreaComum> listarAtivas() {
         return areaComumRepository.findByAtivaTrue();
     }
 
-    /**
-     * Busca uma área comum pelo seu ID ou lança exceção se não for encontrada.
-     */
     public AreaComum buscarPorId(UUID id) {
         return areaComumRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Área comum não encontrada com o ID: " + id));
     }
 
-    /**
-     * Cadastra ou atualiza uma área comum (Apenas Administrador).
-     */
     @Override
     @Transactional
     public AreaComum salvar(
@@ -97,11 +85,6 @@ public class AreaComumService implements AreaComumUseCases {
         return areaComumRepository.save(areaComum);
     }
 
-    /**
-     * Desativa uma área comum.
-     * Áreas desativadas não aceitam novas solicitações de reserva,
-     * mas mantêm intactas todas as reservas existentes.
-     */
     @Transactional
     public AreaComum desativar(AuthenticatedUser administrador, UUID id) {
         authenticatedUserValidator.assertAdministrador(administrador);
@@ -110,9 +93,6 @@ public class AreaComumService implements AreaComumUseCases {
         return areaComumRepository.save(area);
     }
 
-    /**
-     * Reativa uma área comum previamente desativada.
-     */
     @Transactional
     public AreaComum reativar(AuthenticatedUser administrador, UUID id) {
         authenticatedUserValidator.assertAdministrador(administrador);

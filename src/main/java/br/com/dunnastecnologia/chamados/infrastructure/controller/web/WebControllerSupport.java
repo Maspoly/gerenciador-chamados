@@ -222,7 +222,7 @@ public class WebControllerSupport {
         values.put("tamanhoFormatado", formatBytes(tamanhoBytes));
         return values;
     }
-    
+
     public Map<String, Object> toAreaComumMap(AreaComum areaComum) {
         Map<String, Object> values = new LinkedHashMap<>();
 

@@ -33,9 +33,6 @@
                 </div>
 
 
-                <%-- ========================= --%>
-                <%-- CALENDARIO ADMIN          --%>
-                <%-- ========================= --%>
 
                 <div class="reservas-calendar-tools">
 
@@ -82,9 +79,6 @@
                 </div>
 
 
-                <%-- ========================= --%>
-                <%-- FILTRO POR STATUS         --%>
-                <%-- ========================= --%>
 
                 <form
                     method="get"
@@ -156,9 +150,6 @@
                 </form>
 
 
-                <%-- ========================= --%>
-                <%-- LISTAGEM                  --%>
-                <%-- ========================= --%>
 
                 <c:choose>
 
@@ -232,9 +223,6 @@
                                             </td>
 
 
-                                            <%-- ========================= --%>
-                                            <%-- STATUS                    --%>
-                                            <%-- ========================= --%>
 
                                             <td>
 
@@ -261,16 +249,12 @@
                                             </td>
 
 
-                                            <%-- ========================= --%>
-                                            <%-- ACOES                     --%>
-                                            <%-- ========================= --%>
 
                                             <td class="cell-actions">
 
                                                 <div class="reservation-actions">
 
 
-                                                    <%-- SOLICITADA --%>
 
                                                     <c:if test="${reserva.status == 'SOLICITADA'}">
 
@@ -316,7 +300,6 @@
                                                     </c:if>
 
 
-                                                    <%-- APROVADA --%>
 
                                                     <c:if test="${reserva.status == 'APROVADA'}">
 
@@ -331,7 +314,6 @@
                                                     </c:if>
 
 
-                                                    <%-- SEM ACOES --%>
 
                                                     <c:if
                                                         test="${reserva.status == 'NEGADA' || reserva.status == 'CANCELADA'}"
@@ -371,9 +353,6 @@
 </div>
 
 
-<%-- ========================= --%>
-<%-- MODAL NEGAR               --%>
-<%-- ========================= --%>
 
 <dialog
     id="negarReservaModal"
@@ -465,9 +444,6 @@
 </dialog>
 
 
-<%-- ========================= --%>
-<%-- MODAL CANCELAR            --%>
-<%-- ========================= --%>
 
 <dialog
     id="cancelarReservaModal"
@@ -559,16 +535,10 @@
 </dialog>
 
 
-<%-- ========================= --%>
-<%-- CALENDARIO ADMIN          --%>
-<%-- ========================= --%>
 
 <%@ include file="/WEB-INF/jsp/fragments/calendario-admin.jspf" %>
 
 
-<%-- ========================= --%>
-<%-- SCRIPTS                   --%>
-<%-- ========================= --%>
 
 <%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
 

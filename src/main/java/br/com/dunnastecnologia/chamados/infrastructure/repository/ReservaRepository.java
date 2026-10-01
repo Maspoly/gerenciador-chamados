@@ -26,10 +26,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, UUID> {
             StatusReserva status
     );
 
-    // Busca todas as reservas de um morador específico ordenadas por data
-    List<Reserva> findByMoradorIdOrderByDataHoraInicioDesc(UUID moradorId);
-
-    // Consulta de Conflito: Verifica se existe reserva APROVADA na mesma área com sobreposição
     @Query("""
         SELECT COUNT(r) > 0 FROM Reserva r
         WHERE r.areaComum.id = :areaComumId
@@ -58,10 +54,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, UUID> {
             @Param("fim") LocalDateTime fim,
             @Param("status") StatusReserva status
     );
-
-    // Busca reservas de uma determinada área em um período para o calendário
-    List<Reserva> findByAreaComumIdAndDataHoraInicioBetween(UUID areaComumId, LocalDateTime inicio, LocalDateTime fim);
-    List<Reserva> findByStatusOrderByDataHoraInicioDesc(StatusReserva status);
 
     @Query("""
         SELECT r

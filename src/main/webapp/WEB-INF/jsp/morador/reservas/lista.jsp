@@ -25,7 +25,6 @@
 
             <section class="two-column-grid">
 
-                <!-- NOVA RESERVA -->
                 <article class="card">
 
                     <div class="section-header">
@@ -120,7 +119,6 @@
                 </article>
 
 
-                <!-- MINHAS RESERVAS -->
                 <article class="card">
 
                     <div class="section-header">
@@ -270,7 +268,7 @@
             </section>
 
             <%@ include file="/WEB-INF/jsp/fragments/calendario.jspf" %>
-            
+
             <%@ include file="/WEB-INF/jsp/fragments/calendario-minhas-reservas.jspf" %>
 
 
